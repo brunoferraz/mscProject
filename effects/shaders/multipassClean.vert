@@ -47,7 +47,7 @@ float far = 10000.0;
 
 vec4 sampleColor (in sampler2D texture, vec2 coords)
 {
-    vec4 c = vec4(0.0, 0.0, 0.0, 1.0);
+    vec4 c = vec4(0.0, 0.0, 0.0, 0.0);
     if (coords.x > 0 && coords.y > 0)
         c = texture2D(texture, coords);
     return c;
@@ -64,14 +64,14 @@ void main(void)
 
         depth = in_Position.z;
 
-        texCoords = in_TexCoords.xy;
+        texCoords = in_coordText_0.xy;
 
         gl_Position = (projectionMatrix * modelViewMatrix) * in_Position;
 
         color = sampleColor(imageTexture_0, in_coordText_0);
 
 
-//        if (normal.z < 0.0)
+//        if (normal.z > 0.0)
 //            color = vec4(0.0);
 
 

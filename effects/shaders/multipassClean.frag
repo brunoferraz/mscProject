@@ -1,10 +1,10 @@
 #version 400
 
-in vec4 color;
-in vec3 normal;
+in vec4 colorFrag;
+in vec3 normalFrag;
 in vec4 vert;
 
-in vec2 texCoords;
+in vec2 texCoordsFrag;
 
 in float depth;
 
@@ -22,7 +22,7 @@ uniform sampler2D lastPassTexture;
 
 void main(void)
 {
-    vec4 ncolor = color;
+    vec4 ncolor = colorFrag;
     if(multiPass){
         vec2 coord  = vec2(gl_FragCoord.x/ viewportSize.x, gl_FragCoord.y/ viewportSize.y);
         vec4 c      = texture2D(lastPassTexture, coord);
