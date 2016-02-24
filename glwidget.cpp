@@ -85,11 +85,22 @@ void GLWidget::changeCam()
     }
 }
 
+void GLWidget::saveImage()
+{
+     qDebug() << QDate::currentDate().toString("yy-M-dd");
+     std::string path = QString(QDateTime::currentDateTime().toString("yy-MMM-dd_hh-mm-ss")).toUtf8().constData();
+     path += "_autoSave.ppm";
+     multi.saveImage(path);
+}
+
 void GLWidget::mousePressEvent(QMouseEvent *ev)
 {
 //    cout << ev->x() << " " << ev->y() << endl;
-    Eigen::Vector2i viewPort = currentCamera->getViewportSize();
-    Eigen::Vector2i pos = Eigen::Vector2i(ev->x(), viewPort(1) - ev->y()  );
-    cout << multi.getColorAt(pos).transpose() << endl;
-    update();
+    if(Interface::eyeDropper){
+        Eigen::Vector2i viewPort = currentCamera->getViewportSize();
+        Eigen::Vector2i pos = Eigen::Vector2i(ev->x(), viewPort(1) - ev->y()  );
+        qDebug() << this->parentWidget();
+        cout << multi.getColorAt(pos).transpose() << endl;
+        update();
+    }
 }

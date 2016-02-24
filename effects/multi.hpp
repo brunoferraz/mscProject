@@ -453,7 +453,6 @@ public:
         bool multipass = true;
         bool lastpass = false;
         int loops = multiTexObj.getNumPhotos();
-        //loops = 2;
         glDisable (GL_BLEND);
         glEnable(GL_DEPTH_TEST);
         for(int i = 0; i <loops; i++){
@@ -484,7 +483,7 @@ public:
 
                     mesh.getAttribute(imageID.c_str())->enable(mPassRender.getAttributeLocation("in_coordText_0"));
 //                    mesh.getAttribute("in_Position")->enable(mPassRender.getAttributeLocation("in_Position"));
-//                    mesh.getAttribute("in_Normal")->enable(mPassRender.getAttributeLocation("in_Normal"));
+                    mesh.getAttribute("in_Normal")->enable(mPassRender.getAttributeLocation("in_Normal"));
 
 
                     mesh.renderElements();
@@ -514,6 +513,9 @@ public:
     Eigen::Vector4f getColorAt(Eigen::Vector2i v){
         return fboMPass->readPixel(readBuffer, v);
     }
+    void saveImage(string &pathAndName){
+        fboMPass->saveAsPPM(pathAndName, readBuffer);
+    };
 };
 }
 #endif

@@ -3,12 +3,14 @@
 #include <interface.h>
 #include <QDebug>
 
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
     ui->widget->initialize();
+    //ui->label->setText(QString::fromUtf8(Interface::infoBox));
 }
 
 MainWindow::~MainWindow()
@@ -58,4 +60,14 @@ void MainWindow::on_reloadShadersButton_released()
 {
     ui->widget->reload();
     ui->widget->update();
+}
+
+void MainWindow::on_saveImage_released()
+{
+    ui->widget->saveImage();
+}
+
+void MainWindow::on_eyedropper_toggled(bool checked)
+{
+    Interface::eyeDropper = checked;
 }

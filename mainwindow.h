@@ -23,8 +23,9 @@ protected:
 private slots:
     void on_checkBox_toggled(bool checked);
     void on_imageAlphaSlider_sliderMoved(int position);
-
     void on_reloadShadersButton_released();
+    void on_saveImage_released();
+    void on_eyedropper_toggled(bool checked);
 };
 
 #endif // MAINWINDOW_H

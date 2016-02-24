@@ -47,7 +47,7 @@ float far = 10000.0;
 
 vec4 sampleColor (in sampler2D texture, vec2 coords)
 {
-    vec4 c = vec4(0.0, 0.0, 0.0, 0.0);
+    vec4 c = vec4(0.0);
     if (coords.x > 0 && coords.y > 0)
         c = texture2D(texture, coords);
     return c;

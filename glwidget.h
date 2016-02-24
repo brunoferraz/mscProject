@@ -12,6 +12,9 @@
 #include <multi.hpp>
 #include <interface.h>
 #include <QDebug>
+#include <QDate>
+#include <iostream>
+#include <QDateTime>
 
 class GLWidget : public Tucano::QtTrackballWidget
 {
@@ -22,6 +25,8 @@ public:
     void paintGL();
     void reload();
     void changeCam();
+
+    void saveImage();
 
     MultiTextureManagerObj mTextManagerObj;
     Tucano::Camera calibrationCamera;
