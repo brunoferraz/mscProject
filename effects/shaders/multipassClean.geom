@@ -6,18 +6,23 @@ in vec4 color[3];
 in vec3 normal[3];
 in vec2 texCoords[3];
 
+flat out int goodtriangle;
 out vec4 colorFrag;
 out vec3 normalFrag;
 
 void main() {
+
+    goodtriangle = 0;
     if( texCoords[0].x > 0 &&
         texCoords[0].y > 0 &&
         texCoords[1].x > 0 &&
         texCoords[1].y > 0 &&
         texCoords[2].x > 0 &&
-        texCoords[2].y > 0){
+        texCoords[2].y > 0)
+        {
+            goodtriangle = 1;
+        }
 
-        colorFrag = color[0];
         gl_Position = gl_in[0].gl_Position;
         colorFrag = color[0];
         normalFrag = normal[0];
@@ -34,5 +39,5 @@ void main() {
         EmitVertex();
 
         EndPrimitive();
-    }
+
 }

@@ -24,7 +24,7 @@ void main(void)
     texcoord /= texcoord.w;
     texcoord.xy = (texcoord.xy * 0.5) + 0.5;
 
-    vec2 coord = vec2(0, 0);
+    vec2 coord = vec2(-1, -1);
     if(texture2D(depthMapTexture, texcoord.xy).z > depth - 0.0005)
     {
         coord  = texcoord.xy;

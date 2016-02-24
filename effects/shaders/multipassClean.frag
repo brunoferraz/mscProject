@@ -8,6 +8,8 @@ in vec2 texCoordsFrag;
 
 in float depth;
 
+flat in int goodtriangle;
+
 out vec4 out_Color;
 
 uniform mat4 lightViewMatrix;
@@ -21,18 +23,25 @@ uniform vec2 viewportSize;
 uniform sampler2D lastPassTexture;
 
 void main(void)
-{
-    vec4 ncolor = colorFrag;
-    if(multiPass){
-        vec2 coord  = vec2(gl_FragCoord.x/ viewportSize.x, gl_FragCoord.y/ viewportSize.y);
-        vec4 c      = texture2D(lastPassTexture, coord);
-        ncolor.rgb += c.rgb * c.a;
-        ncolor.a   += c.a;
+{   
+    vec2 coord  = vec2(gl_FragCoord.x/ viewportSize.x, gl_FragCoord.y/ viewportSize.y);
+    vec4 ncolor  = texture2D(lastPassTexture, coord);
+
+    if(multiPass && goodtriangle == 1){
+
+        ncolor.rgb += colorFrag.rgb * colorFrag.a;
+        ncolor.a   += colorFrag.a;
+//        ncolor += c;
     }
 
     if(lastPass){
-        ncolor /= ncolor.a;
-        ncolor.a = 1.0;
+        if(ncolor.a != 0){
+
+            ncolor /= ncolor.a;
+            ncolor.a = 1.0;
+        }
+//        ncolor = vec4(1, vec2(gl_FragCoord.x/ viewportSize.x, gl_FragCoord.y/ viewportSize.y), 1);
+//          ncolor = vec4(ncolor.a);
 
 //        vec3 lightDirection = (lightViewMatrix * vec4(0.0, 0.0, 1.0, 0.0)).xyz;
 //        lightDirection = normalize(lightDirection);

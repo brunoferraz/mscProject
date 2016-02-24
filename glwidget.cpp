@@ -87,7 +87,9 @@ void GLWidget::changeCam()
 
 void GLWidget::mousePressEvent(QMouseEvent *ev)
 {
-    //cout << ev->x() << ev->y() << endl;
-    cout << multi.getColorAt(Eigen::Vector2i(ev->x(), ev->y())).transpose() << endl;
+//    cout << ev->x() << " " << ev->y() << endl;
+    Eigen::Vector2i viewPort = currentCamera->getViewportSize();
+    Eigen::Vector2i pos = Eigen::Vector2i(ev->x(), viewPort(1) - ev->y()  );
+    cout << multi.getColorAt(pos).transpose() << endl;
     update();
 }

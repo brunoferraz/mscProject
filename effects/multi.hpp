@@ -450,10 +450,12 @@ public:
 
         fboMPass->clearAttachments();
 
-        bool multipass = false;
+        bool multipass = true;
         bool lastpass = false;
         int loops = multiTexObj.getNumPhotos();
-//        loops = 2;
+        //loops = 2;
+        glDisable (GL_BLEND);
+        glEnable(GL_DEPTH_TEST);
         for(int i = 0; i <loops; i++){
             string imageID = "imageID_" + std::to_string(i);
             string imageTexture = "imageTexture_0";
@@ -475,7 +477,7 @@ public:
 
                     mPassRender.setUniform("imageTexture_0", multiTexObj.getBaseTextureAt(i)->bind());
 
-                    glEnable(GL_DEPTH_TEST);
+
                     mesh.bindBuffers();
 //                    cout << imageID.c_str() << endl;
 //                    cout << mesh.hasAttribute(imageID.c_str()) << endl;

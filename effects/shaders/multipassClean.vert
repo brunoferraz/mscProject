@@ -71,8 +71,5 @@ void main(void)
         color = sampleColor(imageTexture_0, in_coordText_0);
 
 
-//        if (normal.z > 0.0)
-//            color = vec4(0.0);
-
 
 }
