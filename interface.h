@@ -2,6 +2,7 @@
 #define INTERFACE_H
 
 #include <string>
+#include <QTextBrowser>
 
 class Interface
 {
@@ -12,8 +13,7 @@ public:
     static bool showBackgroundImage;
     static bool eyeDropper;
     static float alphaBackgroundImage;
-    static std::string infoBox;
-
+    static QTextBrowser* infoBox;
 };
 
 #endif // INTERFACE_H

@@ -10,7 +10,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     ui->widget->initialize();
-    //ui->label->setText(QString::fromUtf8(Interface::infoBox));
+    Interface::infoBox = ui->infoBox;
 }
 
 MainWindow::~MainWindow()
@@ -39,6 +39,9 @@ void MainWindow::keyReleaseEvent(QKeyEvent *ev)
     }
     if(ev->key()==Qt::Key_R){
         this->on_reloadShadersButton_released();
+    }
+    if(ev->key()==Qt::Key_I){
+        this->ui->eyedropper->toggle();
     }
 }
 

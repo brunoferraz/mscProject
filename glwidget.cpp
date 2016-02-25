@@ -99,8 +99,16 @@ void GLWidget::mousePressEvent(QMouseEvent *ev)
     if(Interface::eyeDropper){
         Eigen::Vector2i viewPort = currentCamera->getViewportSize();
         Eigen::Vector2i pos = Eigen::Vector2i(ev->x(), viewPort(1) - ev->y()  );
-        qDebug() << this->parentWidget();
-        cout << multi.getColorAt(pos).transpose() << endl;
+        Eigen::Vector4f c = multi.getColorAt(pos);
+        QString info;
+        info.append("X: " + QString::number(ev->x()) + "  Y: " + QString::number(ev->y()) +"\n\n");
+        info.append("R: " + QString::number(c(0)) + "\n");
+        info.append("G: " + QString::number(c(1)) + "\n");
+        info.append("B: " + QString::number(c(2)) + "\n");
+        info.append("A: " + QString::number(c(3)) + "\n");
+
+        Interface::infoBox->setText(info);
+
         update();
     }
 }
