@@ -47,6 +47,7 @@ private:
     Shader depthMap;
     Shader multiTF;
     Shader mPassRender;
+    Shader simplePass;
     Shader showFBO;
 
     /// Default color
@@ -104,10 +105,11 @@ public:
     virtual void initialize (void)
     {
         // searches in default shader directory (/shaders) for shader files phongShader.(vert,frag,geom,comp)
-        loadShader(depthMap,        "depthmap");
-        loadShader(phong_shader,    "phongshader") ;
-        loadShader(mPassRender,     "multipassClean");
-        loadShader(showFBO,         "showFbo");
+        loadShader(depthMap,       "depthmap");
+        loadShader(phong_shader,   "phongshader") ;
+        loadShader(mPassRender,    "multipassClean");
+        loadShader(simplePass,     "simplepass");
+        loadShader(showFBO,        "showFbo");
 
         //Initialize multiTF using coordtf shaders
         multiTF.load("coordtf", shaders_dir);
@@ -262,6 +264,7 @@ public:
          }
 //        render(mesh, camera, lightTrackball);
 //        renderMultiPass(multiTextObj, camera, lightTrackball);
+
         renderMultiPassLoop(multiTextObj, camera, lightTrackball);
 //        renderSimplePass(multiTextObj, camera, lightTrackball);
 
@@ -284,29 +287,45 @@ public:
 
         fboMPass->clearAttachment(writeBuffer);
         fboMPass->bindRenderBuffer(writeBuffer);
-            mPassRender.bind();
-                mPassRender.setUniform("projectionMatrix",  camera.getProjectionMatrix());
-                mPassRender.setUniform("modelMatrix",       mesh.getModelMatrix());
-                mPassRender.setUniform("viewMatrix",        camera.getViewMatrix());
-                mPassRender.setUniform("lightViewMatrix",   lightTrackball.getViewMatrix());
-                mPassRender.setUniform("firstPass",         true);
-                mPassRender.setUniform("lastPass",          false);
-                mPassRender.setUniform("multiPass",         false);
-                mPassRender.setUniform("viewportSize", Eigen::Vector2f(viewPort_size[0], viewPort_size[1]));
+            simplePass.bind();
+                simplePass.setUniform("projectionMatrix",  camera.getProjectionMatrix());
+                simplePass.setUniform("modelMatrix",       mesh.getModelMatrix());
+                simplePass.setUniform("viewMatrix",        camera.getViewMatrix());
+                simplePass.setUniform("lightViewMatrix",   lightTrackball.getViewMatrix());
 
-                mPassRender.setUniform("lastPassTexture",   fboMPass->bindAttachment(readBuffer));
+//                simplePass.setUniform("viewportSize", Eigen::Vector2f(viewPort_size[0], viewPort_size[1]));
 
-                mPassRender.setUniform("imageTexture_0", multiTexObj.getBaseTextureAt(0)->bind());
+                simplePass.setUniform("lastPassTexture",   fboMPass->bindAttachment(readBuffer));
+
+                simplePass.setUniform("imageTexture_0", multiTexObj.getBaseTextureAt(0)->bind());
+                simplePass.setUniform("imageTexture_1", multiTexObj.getBaseTextureAt(1)->bind());
+                simplePass.setUniform("imageTexture_2", multiTexObj.getBaseTextureAt(2)->bind());
+                simplePass.setUniform("imageTexture_3", multiTexObj.getBaseTextureAt(3)->bind());
+                simplePass.setUniform("imageTexture_4", multiTexObj.getBaseTextureAt(4)->bind());
+                simplePass.setUniform("imageTexture_5", multiTexObj.getBaseTextureAt(5)->bind());
+                simplePass.setUniform("imageTexture_6", multiTexObj.getBaseTextureAt(6)->bind());
+                simplePass.setUniform("imageTexture_7", multiTexObj.getBaseTextureAt(7)->bind());
+                simplePass.setUniform("imageTexture_8", multiTexObj.getBaseTextureAt(8)->bind());
+                simplePass.setUniform("imageTexture_9", multiTexObj.getBaseTextureAt(9)->bind());
 
                 glEnable(GL_DEPTH_TEST);
+
                 mesh.bindBuffers();
 
-                cout << mesh.hasAttribute("in_Normal") << endl;
+                mesh.getAttribute("imageID_0")->enable(simplePass.getAttributeLocation("in_coordText_0"));
+                mesh.getAttribute("imageID_1")->enable(simplePass.getAttributeLocation("in_coordText_1"));
+                mesh.getAttribute("imageID_2")->enable(simplePass.getAttributeLocation("in_coordText_2"));
+                mesh.getAttribute("imageID_3")->enable(simplePass.getAttributeLocation("in_coordText_3"));
+                mesh.getAttribute("imageID_4")->enable(simplePass.getAttributeLocation("in_coordText_4"));
+                mesh.getAttribute("imageID_5")->enable(simplePass.getAttributeLocation("in_coordText_5"));
+                mesh.getAttribute("imageID_6")->enable(simplePass.getAttributeLocation("in_coordText_6"));
+                mesh.getAttribute("imageID_7")->enable(simplePass.getAttributeLocation("in_coordText_7"));
+                mesh.getAttribute("imageID_8")->enable(simplePass.getAttributeLocation("in_coordText_8"));
+                mesh.getAttribute("imageID_9")->enable(simplePass.getAttributeLocation("in_coordText_9"));
 
-                mesh.getAttribute("imageID_0")->enable(mPassRender.getAttributeLocation("in_coordText_0"));
-                mesh.getAttribute("in_Position")->enable(mPassRender.getAttributeLocation("in_Position"));
+
+//                mesh.getAttribute("in_Position")->enable(simplePass.getAttributeLocation("in_Position"));
 //                mesh.getAttribute("in_Normal")->enable(mPassRender.getAttributeLocation("in_Normal"));
-
 
                 mesh.renderElements();
                 mesh.unbindBuffers();
@@ -316,7 +335,7 @@ public:
                     multiTexObj.getBaseTextureAt(i)->unbind();
                 }
 
-            mPassRender.unbind();
+            simplePass.unbind();
 
         fboMPass->unbind();
 

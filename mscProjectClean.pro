@@ -66,5 +66,8 @@ OTHER_FILES += ./effects/shaders/rendertexture.vert \
                ./effects/shaders/multipassClean.vert \
                ./effects/shaders/multipassClean.frag \
                ./effects/shaders/multipassClean.geom \
+               ./effects/shaders/simplepass.vert \
+               ./effects/shaders/simplepass.geom \
+               ./effects/shaders/simplepass.frag \
                ./effects/shaders/phongshader.vert \
                ./effects/shaders/phongshader.frag \
