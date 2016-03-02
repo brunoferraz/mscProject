@@ -28,7 +28,7 @@ void main(void)
     vec2 coord  = vec2(gl_FragCoord.x/ viewportSize.x, gl_FragCoord.y/ viewportSize.y);
     vec4 ncolor  = texture2D(lastPassTexture, coord);
 
-    if(multiPass && goodtriangle == 1){
+    if(goodtriangle == 1){
         ncolor.rgb += colorFrag.rgb * colorFrag.a;
         ncolor.a   += colorFrag.a;
     }

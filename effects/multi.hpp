@@ -109,7 +109,8 @@ public:
         // searches in default shader directory (/shaders) for shader files phongShader.(vert,frag,geom,comp)
         loadShader(depthMap,       "depthmap");
         loadShader(phong_shader,   "phongshader") ;
-        loadShader(mPassRenderLoop,    "multipassLoop");
+        loadShader(mPassRenderLoop,"multipassLoop");
+        loadShader(mPassRender,    "multipass");
 
         loadShader(simplePass,     "simplepass");
         loadShader(showFBO,        "showFbo");
@@ -473,39 +474,64 @@ public:
 
         bool multipass = true;
         bool lastpass = false;
-        int loops = multiTexObj.getNumPhotos();
+        int totalTextures = multiTexObj.getNumPhotos();
+        int limitPerPass = 4;
+        int loops = totalTextures/limitPerPass;
+        int resto = totalTextures%limitPerPass;
+
         glDisable (GL_BLEND);
         glEnable(GL_DEPTH_TEST);
-        for(int i = 0; i <loops; i++){
-            string imageID = "imageID_" + std::to_string(i);
-            string imageTexture = "imageTexture_0";
+
+        int counter = loops;
+        if(resto>0){
+            counter++;
+        }
+
+        cout <<"Total number of textures.." << totalTextures << endl;
+        cout <<"Texture limit per pass...." << limitPerPass << endl;
+        cout <<"Number of loops..........." << loops << endl;
+        cout <<"Texture on last pass......" << resto << endl;
+        cout <<"" << endl;
+
+        counter = 1;
+        while(counter--){
+            int texturesPerPass = limitPerPass;
+            if(lastpass && resto !=0) texturesPerPass = resto;
 
             fboMPass->clearAttachment(writeBuffer);
             fboMPass->bindRenderBuffer(writeBuffer);
-                mPassRenderLoop.bind();
-                    mPassRenderLoop.setUniform("projectionMatrix",  camera.getProjectionMatrix());
-                    mPassRenderLoop.setUniform("modelMatrix",       mesh.getModelMatrix());
-                    mPassRenderLoop.setUniform("viewMatrix",        camera.getViewMatrix());
-                    mPassRenderLoop.setUniform("lightViewMatrix",   lightTrackball.getViewMatrix());
-                    mPassRenderLoop.setUniform("firstPass",         true);
-                    mPassRenderLoop.setUniform("lastPass",          lastpass);
-                    mPassRenderLoop.setUniform("multiPass",         multipass);
+                mPassRender.bind();
 
-                    mPassRenderLoop.setUniform("viewportSize", Eigen::Vector2f(viewPort_size[0], viewPort_size[1]));
+                    mPassRender.setUniform("projectionMatrix",camera.getProjectionMatrix());
+                    mPassRender.setUniform("modelMatrix",     mesh.getModelMatrix());
+                    mPassRender.setUniform("viewMatrix",      camera.getViewMatrix());
+                    mPassRender.setUniform("lightViewMatrix", lightTrackball.getViewMatrix());
+                    mPassRender.setUniform("firstPass",       true);
+                    mPassRender.setUniform("lastPass",        lastpass);
+                    mPassRender.setUniform("multiPass",       multipass);
+                    mPassRender.setUniform("numImages",       texturesPerPass);
 
-                    mPassRenderLoop.setUniform("lastPassTexture",   fboMPass->bindAttachment(readBuffer));
+                    mPassRender.setUniform("viewportSize",    Eigen::Vector2f(viewPort_size[0], viewPort_size[1]));
 
-                    mPassRenderLoop.setUniform("imageTexture_0", multiTexObj.getBaseTextureAt(i)->bind());
+                    mPassRender.setUniform("lastPassTexture", fboMPass->bindAttachment(readBuffer));
 
 
-                    mesh.bindBuffers();
-//                    cout << imageID.c_str() << endl;
-//                    cout << mesh.hasAttribute(imageID.c_str()) << endl;
+                    for(int i=0; i<texturesPerPass; i++){
+                        string imageTexture = "imageTexture_" + std::to_string(i);
+                        mPassRender.setUniform(imageTexture.c_str(),  multiTexObj.getBaseTextureAt(i)->bind());
+                    }
+//                    mesh.bindBuffers();
 
-                    mesh.getAttribute(imageID.c_str())->enable(mPassRenderLoop.getAttributeLocation("in_coordText_0"));
-//                    mesh.getAttribute("in_Position")->enable(mPassRender.getAttributeLocation("in_Position"));
-                    mesh.getAttribute("in_Normal")->enable(mPassRenderLoop.getAttributeLocation("in_Normal"));
+                    glBindVertexArray(mesh.get_vao_id()); //Vertex Array Object
+                    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.get_index_buffer_id());
 
+                    mesh.getAttribute("in_Position")->enable(mPassRender.getAttributeLocation("in_Position"));
+                    mesh.getAttribute("in_Normal")->enable(mPassRender.getAttributeLocation("in_Normal"));
+                    for(int i=0; i<texturesPerPass; i++){
+                        string imageID = "imageID_" + std::to_string(i);
+                        string in_coordText = "in_coordText_" + std::to_string(i);
+                        mesh.getAttribute(imageID.c_str())->enable(mPassRender.getAttributeLocation(in_coordText.c_str()));
+                    }
 
                     mesh.renderElements();
                     mesh.unbindBuffers();
@@ -514,21 +540,19 @@ public:
                     {
                         multiTexObj.getBaseTextureAt(i)->unbind();
                     }
-                mPassRenderLoop.unbind();
+                mPassRender.unbind();
             fboMPass->unbind();
+
             //SWAP
             GLuint temp = readBuffer;
             readBuffer = writeBuffer;
             writeBuffer = temp;
             multipass = true;
-            if(i == loops-2)
+            if(counter == 1)
             {
-//                cout << "penultimo loop" << i << " " <<loops << endl;
                 lastpass = true;
             }
-//            fboMPass->saveAsPPM(string("novaMontagem" + std::to_string(i) + ".ppm").c_str(), readBuffer);
         }
-//        fboMPass->saveAsPPM("nome.ppm", readBuffer);
         renderFbo(*fboMPass, quad, readBuffer);
     }
 

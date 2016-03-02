@@ -10,6 +10,8 @@ in vec2 in_coordText_4;
 in vec2 in_coordText_5;
 in vec2 in_coordText_6;
 in vec2 in_coordText_7;
+in vec2 in_coordText_8;
+in vec2 in_coordText_9;
 
 in vec2 in_TexCoords;
 in vec4 in_Color;
@@ -25,11 +27,13 @@ out float depth;
 uniform mat4 modelMatrix;
 uniform mat4 viewMatrix;
 uniform mat4 projectionMatrix;
+
+uniform float numImages;
+
 //uniform vec4 default_color;
 
 // if attribute in_Color exists or not
 //uniform bool has_color;
-//uniform float numImages;
 //uniform bool firstPass;
 //uniform bool lastPass;
 
@@ -41,6 +45,8 @@ uniform sampler2D imageTexture_4;
 uniform sampler2D imageTexture_5;
 uniform sampler2D imageTexture_6;
 uniform sampler2D imageTexture_7;
+uniform sampler2D imageTexture_8;
+uniform sampler2D imageTexture_9;
 
 float near = 0.1;
 float far = 10000.0;
