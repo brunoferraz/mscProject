@@ -63,9 +63,12 @@ OTHER_FILES += ./effects/shaders/rendertexture.vert \
                ./effects/shaders/coordtf.frag \
                ./effects/shaders/showFbo.vert \
                ./effects/shaders/showFbo.frag \
-               ./effects/shaders/multipassClean.vert \
-               ./effects/shaders/multipassClean.frag \
-               ./effects/shaders/multipassClean.geom \
+               ./effects/shaders/multipassLoop.vert \
+               ./effects/shaders/multipassLoop.frag \
+               ./effects/shaders/multipassLoop.geom \
+               ./effects/shaders/multipass.vert \
+               ./effects/shaders/multipass.frag \
+               ./effects/shaders/multipass.geom \
                ./effects/shaders/simplepass.vert \
                ./effects/shaders/simplepass.geom \
                ./effects/shaders/simplepass.frag \

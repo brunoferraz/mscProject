@@ -46,7 +46,9 @@ private:
     Shader phong_shader;
     Shader depthMap;
     Shader multiTF;
+    Shader mPassRenderLoop;
     Shader mPassRender;
+
     Shader simplePass;
     Shader showFBO;
 
@@ -107,7 +109,8 @@ public:
         // searches in default shader directory (/shaders) for shader files phongShader.(vert,frag,geom,comp)
         loadShader(depthMap,       "depthmap");
         loadShader(phong_shader,   "phongshader") ;
-        loadShader(mPassRender,    "multipassClean");
+        loadShader(mPassRenderLoop,    "multipassLoop");
+
         loadShader(simplePass,     "simplepass");
         loadShader(showFBO,        "showFbo");
 
@@ -263,9 +266,9 @@ public:
             firstRenderFlag = false;
          }
 //        render(mesh, camera, lightTrackball);
-//        renderMultiPass(multiTextObj, camera, lightTrackball);
+        renderMultiPass(multiTextObj, camera, lightTrackball);
 
-        renderMultiPassLoop(multiTextObj, camera, lightTrackball);
+//        renderMultiPassLoop(multiTextObj, camera, lightTrackball);
 //        renderSimplePass(multiTextObj, camera, lightTrackball);
 
     }
@@ -348,7 +351,7 @@ public:
 
     }
 
-    void renderMultiPass(MultiTextureManagerObj& multiTexObj, const Tucano::Camera& camera, const Tucano::Camera& lightTrackball)
+    void renderMultiPassOld(MultiTextureManagerObj& multiTexObj, const Tucano::Camera& camera, const Tucano::Camera& lightTrackball)
     {
         Mesh &mesh = *multiTexObj.getMesh();
         Eigen::Vector4f viewPort = camera.getViewport();
@@ -366,26 +369,26 @@ public:
 
         fboMPass->clearAttachment(writeBuffer);
         fboMPass->bindRenderBuffer(writeBuffer);
-            mPassRender.bind();
-                mPassRender.setUniform("projectionMatrix",  camera.getProjectionMatrix());
-                mPassRender.setUniform("modelMatrix",       mesh.getModelMatrix());
-                mPassRender.setUniform("viewMatrix",        camera.getViewMatrix());
-                mPassRender.setUniform("lightViewMatrix",   lightTrackball.getViewMatrix());
-                mPassRender.setUniform("firstPass",         true);
-                mPassRender.setUniform("lastPass",          false);
-                mPassRender.setUniform("multiPass",         false);
-                mPassRender.setUniform("viewportSize", Eigen::Vector2f(viewPort_size[0], viewPort_size[1]));
+            mPassRenderLoop.bind();
+                mPassRenderLoop.setUniform("projectionMatrix",  camera.getProjectionMatrix());
+                mPassRenderLoop.setUniform("modelMatrix",       mesh.getModelMatrix());
+                mPassRenderLoop.setUniform("viewMatrix",        camera.getViewMatrix());
+                mPassRenderLoop.setUniform("lightViewMatrix",   lightTrackball.getViewMatrix());
+                mPassRenderLoop.setUniform("firstPass",         true);
+                mPassRenderLoop.setUniform("lastPass",          false);
+                mPassRenderLoop.setUniform("multiPass",         false);
+                mPassRenderLoop.setUniform("viewportSize", Eigen::Vector2f(viewPort_size[0], viewPort_size[1]));
 
-                mPassRender.setUniform("lastPassTexture",   fboMPass->bindAttachment(readBuffer));
+                mPassRenderLoop.setUniform("lastPassTexture",   fboMPass->bindAttachment(readBuffer));
 
-                mPassRender.setUniform("imageTexture_0", multiTexObj.getBaseTextureAt(0)->bind());
+                mPassRenderLoop.setUniform("imageTexture_0", multiTexObj.getBaseTextureAt(0)->bind());
 
 
                 glEnable(GL_DEPTH_TEST);
                 mesh.bindBuffers();
-                mesh.getAttribute("imageID_0")->enable(mPassRender.getAttributeLocation("in_coordText_0"));
-                mesh.getAttribute("in_Position")->enable(mPassRender.getAttributeLocation("in_Position"));
-                mesh.getAttribute("in_Normal")->enable(mPassRender.getAttributeLocation("in_Normal"));
+                mesh.getAttribute("imageID_0")->enable(mPassRenderLoop.getAttributeLocation("in_coordText_0"));
+                mesh.getAttribute("in_Position")->enable(mPassRenderLoop.getAttributeLocation("in_Position"));
+                mesh.getAttribute("in_Normal")->enable(mPassRenderLoop.getAttributeLocation("in_Normal"));
 
 
                 mesh.renderElements();
@@ -396,7 +399,7 @@ public:
                     multiTexObj.getBaseTextureAt(i)->unbind();
                 }
 
-            mPassRender.unbind();
+            mPassRenderLoop.unbind();
 
         fboMPass->unbind();
 
@@ -409,29 +412,29 @@ public:
 
         fboMPass->clearAttachment(writeBuffer);
         fboMPass->bindRenderBuffer(writeBuffer);
-            mPassRender.bind();
-                mPassRender.setUniform("projectionMatrix",  camera.getProjectionMatrix());
-                mPassRender.setUniform("modelMatrix",       mesh.getModelMatrix());
-                mPassRender.setUniform("viewMatrix",        camera.getViewMatrix());
-                mPassRender.setUniform("lightViewMatrix",   lightTrackball.getViewMatrix());
-                mPassRender.setUniform("firstPass",         true);
-                mPassRender.setUniform("lastPass",          true);
-                mPassRender.setUniform("multiPass",         true);
-                mPassRender.setUniform("viewportSize", Eigen::Vector2f(viewPort_size[0], viewPort_size[1]));
+            mPassRenderLoop.bind();
+                mPassRenderLoop.setUniform("projectionMatrix",  camera.getProjectionMatrix());
+                mPassRenderLoop.setUniform("modelMatrix",       mesh.getModelMatrix());
+                mPassRenderLoop.setUniform("viewMatrix",        camera.getViewMatrix());
+                mPassRenderLoop.setUniform("lightViewMatrix",   lightTrackball.getViewMatrix());
+                mPassRenderLoop.setUniform("firstPass",         true);
+                mPassRenderLoop.setUniform("lastPass",          true);
+                mPassRenderLoop.setUniform("multiPass",         true);
+                mPassRenderLoop.setUniform("viewportSize", Eigen::Vector2f(viewPort_size[0], viewPort_size[1]));
 
 
-                mPassRender.setUniform("lastPassTexture",   fboMPass->bindAttachment(readBuffer));
+                mPassRenderLoop.setUniform("lastPassTexture",   fboMPass->bindAttachment(readBuffer));
 
-                mPassRender.setUniform("imageTexture_0", multiTexObj.getBaseTextureAt(1)->bind());
+                mPassRenderLoop.setUniform("imageTexture_0", multiTexObj.getBaseTextureAt(1)->bind());
 
 
                 glEnable(GL_DEPTH_TEST);
                 Misc::errorCheckFunc(__FILE__, __LINE__);
                 mesh.bindBuffers();
                 Misc::errorCheckFunc(__FILE__, __LINE__);
-                mesh.getAttribute("imageID_1")->enable(mPassRender.getAttributeLocation("in_coordText_0"));
-                mesh.getAttribute("in_Position")->enable(mPassRender.getAttributeLocation("in_Position"));
-                mesh.getAttribute("in_Normal")->enable(mPassRender.getAttributeLocation("in_Normal"));
+                mesh.getAttribute("imageID_1")->enable(mPassRenderLoop.getAttributeLocation("in_coordText_0"));
+                mesh.getAttribute("in_Position")->enable(mPassRenderLoop.getAttributeLocation("in_Position"));
+                mesh.getAttribute("in_Normal")->enable(mPassRenderLoop.getAttributeLocation("in_Normal"));
 
                 mesh.renderElements();
                 mesh.unbindBuffers();
@@ -441,7 +444,7 @@ public:
                     multiTexObj.getBaseTextureAt(i)->unbind();
                 }
 
-            mPassRender.unbind();
+            mPassRenderLoop.unbind();
 
         fboMPass->unbind();
 
@@ -450,6 +453,82 @@ public:
         readBuffer = writeBuffer;
         writeBuffer = temp;
 
+        renderFbo(*fboMPass, quad, readBuffer);
+    }
+    void renderMultiPass(MultiTextureManagerObj& multiTexObj, const Tucano::Camera& camera, const Tucano::Camera& lightTrackball)
+    {
+        Mesh &mesh = *multiTexObj.getMesh();
+        Eigen::Vector4f viewPort = camera.getViewport();
+        Eigen::Vector2i viewPort_size = camera.getViewportSize();
+        int size = 1;
+        viewPort << 0, 0, viewPort_size[0] * size, viewPort_size[1] * size;
+        glViewport(viewPort[0], viewPort[1], viewPort[2], viewPort[3]);
+
+        if(fboMPass->getWidth() != viewPort_size[0] || fboMPass->getHeight() != viewPort_size[1])
+        {
+            fboMPass->create(viewPort_size[0], viewPort_size[1], 2);
+        }
+
+        fboMPass->clearAttachments();
+
+        bool multipass = true;
+        bool lastpass = false;
+        int loops = multiTexObj.getNumPhotos();
+        glDisable (GL_BLEND);
+        glEnable(GL_DEPTH_TEST);
+        for(int i = 0; i <loops; i++){
+            string imageID = "imageID_" + std::to_string(i);
+            string imageTexture = "imageTexture_0";
+
+            fboMPass->clearAttachment(writeBuffer);
+            fboMPass->bindRenderBuffer(writeBuffer);
+                mPassRenderLoop.bind();
+                    mPassRenderLoop.setUniform("projectionMatrix",  camera.getProjectionMatrix());
+                    mPassRenderLoop.setUniform("modelMatrix",       mesh.getModelMatrix());
+                    mPassRenderLoop.setUniform("viewMatrix",        camera.getViewMatrix());
+                    mPassRenderLoop.setUniform("lightViewMatrix",   lightTrackball.getViewMatrix());
+                    mPassRenderLoop.setUniform("firstPass",         true);
+                    mPassRenderLoop.setUniform("lastPass",          lastpass);
+                    mPassRenderLoop.setUniform("multiPass",         multipass);
+
+                    mPassRenderLoop.setUniform("viewportSize", Eigen::Vector2f(viewPort_size[0], viewPort_size[1]));
+
+                    mPassRenderLoop.setUniform("lastPassTexture",   fboMPass->bindAttachment(readBuffer));
+
+                    mPassRenderLoop.setUniform("imageTexture_0", multiTexObj.getBaseTextureAt(i)->bind());
+
+
+                    mesh.bindBuffers();
+//                    cout << imageID.c_str() << endl;
+//                    cout << mesh.hasAttribute(imageID.c_str()) << endl;
+
+                    mesh.getAttribute(imageID.c_str())->enable(mPassRenderLoop.getAttributeLocation("in_coordText_0"));
+//                    mesh.getAttribute("in_Position")->enable(mPassRender.getAttributeLocation("in_Position"));
+                    mesh.getAttribute("in_Normal")->enable(mPassRenderLoop.getAttributeLocation("in_Normal"));
+
+
+                    mesh.renderElements();
+                    mesh.unbindBuffers();
+
+                    for(int i =0; i < multiTexObj.getNumPhotos(); i++)
+                    {
+                        multiTexObj.getBaseTextureAt(i)->unbind();
+                    }
+                mPassRenderLoop.unbind();
+            fboMPass->unbind();
+            //SWAP
+            GLuint temp = readBuffer;
+            readBuffer = writeBuffer;
+            writeBuffer = temp;
+            multipass = true;
+            if(i == loops-2)
+            {
+//                cout << "penultimo loop" << i << " " <<loops << endl;
+                lastpass = true;
+            }
+//            fboMPass->saveAsPPM(string("novaMontagem" + std::to_string(i) + ".ppm").c_str(), readBuffer);
+        }
+//        fboMPass->saveAsPPM("nome.ppm", readBuffer);
         renderFbo(*fboMPass, quad, readBuffer);
     }
 
@@ -480,29 +559,29 @@ public:
 
             fboMPass->clearAttachment(writeBuffer);
             fboMPass->bindRenderBuffer(writeBuffer);
-                mPassRender.bind();
-                    mPassRender.setUniform("projectionMatrix",  camera.getProjectionMatrix());
-                    mPassRender.setUniform("modelMatrix",       mesh.getModelMatrix());
-                    mPassRender.setUniform("viewMatrix",        camera.getViewMatrix());
-                    mPassRender.setUniform("lightViewMatrix",   lightTrackball.getViewMatrix());
-                    mPassRender.setUniform("firstPass",         true);
-                    mPassRender.setUniform("lastPass",          lastpass);
-                    mPassRender.setUniform("multiPass",         multipass);
+                mPassRenderLoop.bind();
+                    mPassRenderLoop.setUniform("projectionMatrix",  camera.getProjectionMatrix());
+                    mPassRenderLoop.setUniform("modelMatrix",       mesh.getModelMatrix());
+                    mPassRenderLoop.setUniform("viewMatrix",        camera.getViewMatrix());
+                    mPassRenderLoop.setUniform("lightViewMatrix",   lightTrackball.getViewMatrix());
+                    mPassRenderLoop.setUniform("firstPass",         true);
+                    mPassRenderLoop.setUniform("lastPass",          lastpass);
+                    mPassRenderLoop.setUniform("multiPass",         multipass);
 
-                    mPassRender.setUniform("viewportSize", Eigen::Vector2f(viewPort_size[0], viewPort_size[1]));
+                    mPassRenderLoop.setUniform("viewportSize", Eigen::Vector2f(viewPort_size[0], viewPort_size[1]));
 
-                    mPassRender.setUniform("lastPassTexture",   fboMPass->bindAttachment(readBuffer));
+                    mPassRenderLoop.setUniform("lastPassTexture",   fboMPass->bindAttachment(readBuffer));
 
-                    mPassRender.setUniform("imageTexture_0", multiTexObj.getBaseTextureAt(i)->bind());
+                    mPassRenderLoop.setUniform("imageTexture_0", multiTexObj.getBaseTextureAt(i)->bind());
 
 
                     mesh.bindBuffers();
 //                    cout << imageID.c_str() << endl;
 //                    cout << mesh.hasAttribute(imageID.c_str()) << endl;
 
-                    mesh.getAttribute(imageID.c_str())->enable(mPassRender.getAttributeLocation("in_coordText_0"));
+                    mesh.getAttribute(imageID.c_str())->enable(mPassRenderLoop.getAttributeLocation("in_coordText_0"));
 //                    mesh.getAttribute("in_Position")->enable(mPassRender.getAttributeLocation("in_Position"));
-                    mesh.getAttribute("in_Normal")->enable(mPassRender.getAttributeLocation("in_Normal"));
+                    mesh.getAttribute("in_Normal")->enable(mPassRenderLoop.getAttributeLocation("in_Normal"));
 
 
                     mesh.renderElements();
@@ -512,7 +591,7 @@ public:
                     {
                         multiTexObj.getBaseTextureAt(i)->unbind();
                     }
-                mPassRender.unbind();
+                mPassRenderLoop.unbind();
             fboMPass->unbind();
             //SWAP
             GLuint temp = readBuffer;
@@ -535,6 +614,9 @@ public:
     void saveImage(string &pathAndName){
         fboMPass->saveAsPPM(pathAndName, readBuffer);
     };
+    Shader getPassRender() const;
+    void setPassRender(const Shader &passRender);
 };
+
 }
 #endif
