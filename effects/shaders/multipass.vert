@@ -73,17 +73,19 @@ void main(void)
         texCoords = in_coordText_0.xy;
 
         gl_Position = (projectionMatrix * modelViewMatrix) * in_Position;
+        color = vec4(0.0);
 
-        color = sampleColor(imageTexture_0, in_coordText_0);
+
+        color += sampleColor(imageTexture_0, in_coordText_0);
         color += sampleColor(imageTexture_1, in_coordText_1);
         color += sampleColor(imageTexture_2, in_coordText_2);
-        color += sampleColor(imageTexture_3, in_coordText_3);
-        color += sampleColor(imageTexture_4, in_coordText_4);
-        color += sampleColor(imageTexture_5, in_coordText_5);
-        color += sampleColor(imageTexture_6, in_coordText_6);
-        color += sampleColor(imageTexture_7, in_coordText_7);
-        color += sampleColor(imageTexture_8, in_coordText_8);
-        color += sampleColor(imageTexture_9, in_coordText_9);
+//        color += sampleColor(imageTexture_3, in_coordText_3);
+//        color += sampleColor(imageTexture_4, in_coordText_4);
+//        color += sampleColor(imageTexture_5, in_coordText_5);
+//        color += sampleColor(imageTexture_6, in_coordText_6);
+//        color += sampleColor(imageTexture_7, in_coordText_7);
+//        color += sampleColor(imageTexture_8, in_coordText_8);
+//        color += sampleColor(imageTexture_9, in_coordText_9);
 
 
 

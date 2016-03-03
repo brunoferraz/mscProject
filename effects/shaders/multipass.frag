@@ -35,22 +35,22 @@ void main(void)
 
     if(lastPass){
         if(ncolor.a != 0){
-            ncolor /= ncolor.a;
+            ncolor.rgb /= ncolor.a + 1;
             ncolor.a = 1.0;
         }
 
-        vec3 lightDirection = (lightViewMatrix * vec4(0.0, 0.0, 1.0, 0.0)).xyz;
-        lightDirection = normalize(lightDirection);
+//        vec3 lightDirection = (lightViewMatrix * vec4(0.0, 0.0, 1.0, 0.0)).xyz;
+//        lightDirection = normalize(lightDirection);
 
-        vec3 lightReflection = reflect(-lightDirection, normal);
-        vec3 eyeDirection = -normalize(vert.xyz);
-        float shininess = 100.0;
+//        vec3 lightReflection = reflect(-lightDirection, normal);
+//        vec3 eyeDirection = -normalize(vert.xyz);
+//        float shininess = 100.0;
 
-        vec4 ambientLight = ncolor * 0.5;
-        vec4 diffuseLight = ncolor * 0.4 * max(dot(lightDirection, normal),0.0);
-        vec4 specularLight = vec4(1.0) *  max(pow(dot(lightReflection, eyeDirection), shininess),0.0);
+//        vec4 ambientLight = ncolor * 0.5;
+//        vec4 diffuseLight = ncolor * 0.4 * max(dot(lightDirection, normal),0.0);
+//        vec4 specularLight = vec4(1.0) *  max(pow(dot(lightReflection, eyeDirection), shininess),0.0);
 
-        ncolor = vec4(ambientLight.xyz + diffuseLight.xyz + specularLight.xyz, 1.0);
+//        ncolor = vec4(ambientLight.xyz + diffuseLight.xyz + specularLight.xyz, 1.0);
     }
     out_Color = ncolor;
 //    out_Color = vec4(1.0, 0.0, 0.0, 1.0);

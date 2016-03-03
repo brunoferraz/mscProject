@@ -494,7 +494,11 @@ public:
         cout <<"" << endl;
 
 //        counter = 1;
-        while(counter--){
+        loops = counter;
+        counter = 0;
+//        while(counter <= loops){
+        {
+            lastpass = true;
             int texturesPerPass = limitPerPass;
             if(lastpass && resto !=0) texturesPerPass = resto;
 
@@ -515,20 +519,23 @@ public:
 
                     mPassRender.setUniform("lastPassTexture", fboMPass->bindAttachment(readBuffer));
 
-
+                    texturesPerPass = 3;
                     for(int i=0; i<texturesPerPass; i++){
                         string imageTexture = "imageTexture_" + std::to_string(i);
-                        mPassRender.setUniform(imageTexture.c_str(),  multiTexObj.getBaseTextureAt(i * counter)->bind());
+                        mPassRender.setUniform(imageTexture.c_str(),  multiTexObj.getBaseTextureAt(i + (counter * (texturesPerPass-1)))->bind());
                     }
+
                     mesh.bindBuffers();
 
 //                    glBindVertexArray(mesh.get_vao_id()); //Vertex Array Object
 //                    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.get_index_buffer_id());
 
-                    mesh.getAttribute("in_Position")->enable(mPassRender.getAttributeLocation("in_Position"));
-                    mesh.getAttribute("in_Normal")->enable(mPassRender.getAttributeLocation("in_Normal"));
-                    for(int i=0; i<texturesPerPass; i++){
-                        string imageID = "imageID_" + std::to_string(i * counter);
+//                    mesh.getAttribute("in_Position")->enable(mPassRender.getAttributeLocation("in_Position"));
+//                    mesh.getAttribute("in_Normal")->enable(mPassRender.getAttributeLocation("in_Normal"));
+
+
+                    for(int i=0; i< texturesPerPass; i++){
+                        string imageID = "imageID_" + std::to_string(i + (counter * (texturesPerPass-1)));
                         string in_coordText = "in_coordText_" + std::to_string(i);
                         mesh.getAttribute(imageID.c_str())->enable(mPassRender.getAttributeLocation(in_coordText.c_str()));
                     }
@@ -548,10 +555,11 @@ public:
             readBuffer = writeBuffer;
             writeBuffer = temp;
             multipass = true;
-            if(counter == 1)
+            if(counter == loops - 1)
             {
                 lastpass = true;
             }
+            counter++;
         }
         renderFbo(*fboMPass, quad, readBuffer);
     }
