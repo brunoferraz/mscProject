@@ -496,9 +496,8 @@ public:
 //        counter = 1;
         loops = counter;
         counter = 0;
-//        while(counter <= loops){
+        while(counter < loops)
         {
-            lastpass = true;
             int texturesPerPass = limitPerPass;
             if(lastpass && resto !=0) texturesPerPass = resto;
 
@@ -517,9 +516,9 @@ public:
 
                     mPassRender.setUniform("viewportSize",    Eigen::Vector2f(viewPort_size[0], viewPort_size[1]));
 
-                    mPassRender.setUniform("lastPassTexture", fboMPass->bindAttachment(readBuffer));
+                    mPassRender.setUniform("prevPassTexture", fboMPass->bindAttachment(readBuffer));
 
-                    texturesPerPass = 3;
+                    texturesPerPass = 4;
                     for(int i=0; i<texturesPerPass; i++){
                         string imageTexture = "imageTexture_" + std::to_string(i);
                         mPassRender.setUniform(imageTexture.c_str(),  multiTexObj.getBaseTextureAt(i + (counter * (texturesPerPass-1)))->bind());
@@ -555,7 +554,7 @@ public:
             readBuffer = writeBuffer;
             writeBuffer = temp;
             multipass = true;
-            if(counter == loops - 1)
+            if(counter == (loops - 2))
             {
                 lastpass = true;
             }
@@ -605,9 +604,8 @@ public:
                     mPassRenderLoop.setUniform("lastPassTexture",   fboMPass->bindAttachment(readBuffer));
 
                     mPassRenderLoop.setUniform("imageTexture_0", multiTexObj.getBaseTextureAt(i)->bind());
-
-
                     mesh.bindBuffers();
+
 //                    cout << imageID.c_str() << endl;
 //                    cout << mesh.hasAttribute(imageID.c_str()) << endl;
 

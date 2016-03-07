@@ -20,7 +20,10 @@ in vec4 in_Color;
 out vec4 color;
 out vec3 normal;
 out vec4 vert;
-out vec2 texCoords;
+out vec2 texCoords_0;
+out vec2 texCoords_1;
+out vec2 texCoords_2;
+out vec2 texCoords_3;
 
 out float depth;
 
@@ -37,10 +40,10 @@ uniform float numImages;
 //uniform bool firstPass;
 //uniform bool lastPass;
 
-uniform sampler2D imageTexture_0;
-uniform sampler2D imageTexture_1;
-uniform sampler2D imageTexture_2;
-uniform sampler2D imageTexture_3;
+//uniform sampler2D imageTexture_0;
+//uniform sampler2D imageTexture_1;
+//uniform sampler2D imageTexture_2;
+//uniform sampler2D imageTexture_3;
 uniform sampler2D imageTexture_4;
 uniform sampler2D imageTexture_5;
 uniform sampler2D imageTexture_6;
@@ -51,13 +54,13 @@ uniform sampler2D imageTexture_9;
 float near = 0.1;
 float far = 10000.0;
 
-vec4 sampleColor (in sampler2D texture, vec2 coords)
-{
-    vec4 c = vec4(0.0);
-    if (coords.x > 0 && coords.y > 0)
-        c = texture2D(texture, coords);
-    return c;
-}
+//vec4 sampleColor (in sampler2D texture, vec2 coords)
+//{
+//    vec4 c = vec4(0.0);
+//    if (coords.x > 0 && coords.y > 0)
+//        c = texture2D(texture, coords);
+//    return c;
+//}
 
 void main(void)
 {
@@ -70,15 +73,18 @@ void main(void)
 
         depth = in_Position.z;
 
-        texCoords = in_coordText_0.xy;
-
         gl_Position = (projectionMatrix * modelViewMatrix) * in_Position;
-        color = vec4(0.0);
+//        color = vec4(0.0);
 
 
-        color += sampleColor(imageTexture_0, in_coordText_0);
-        color += sampleColor(imageTexture_1, in_coordText_1);
-        color += sampleColor(imageTexture_2, in_coordText_2);
+        texCoords_0 = in_coordText_0.xy;
+        texCoords_1 = in_coordText_1.xy;
+        texCoords_2 = in_coordText_2.xy;
+        texCoords_3 = in_coordText_3.xy;
+
+//        color += sampleColor(imageTexture_0, in_coordText_0);
+//        color += sampleColor(imageTexture_1, in_coordText_1);
+//        color += sampleColor(imageTexture_2, in_coordText_2);
 //        color += sampleColor(imageTexture_3, in_coordText_3);
 //        color += sampleColor(imageTexture_4, in_coordText_4);
 //        color += sampleColor(imageTexture_5, in_coordText_5);
