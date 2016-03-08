@@ -88,7 +88,7 @@ void GLWidget::changeCam()
 void GLWidget::saveImage()
 {
      qDebug() << QDate::currentDate().toString("yy-M-dd");
-     std::string path = "autoSave_";
+     std::string path = "autoSave";
      path += QString(QDateTime::currentDateTime().toString("yy_MMM_dd_hh_mm_ss")).toUtf8().constData();
      path += ".ppm";
      multi.saveImage(path);

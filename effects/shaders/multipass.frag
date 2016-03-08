@@ -6,6 +6,7 @@ in vec2 texCoordsFrag_0;
 in vec2 texCoordsFrag_1;
 in vec2 texCoordsFrag_2;
 in vec2 texCoordsFrag_3;
+in vec2 texCoordsFrag_4;
 
 in float depth;
 
@@ -14,6 +15,7 @@ flat in int goodTex_0;
 flat in int goodTex_1;
 flat in int goodTex_2;
 flat in int goodTex_3;
+flat in int goodTex_4;
 
 out vec4 out_Color;
 
@@ -29,6 +31,7 @@ uniform sampler2D imageTexture_0;
 uniform sampler2D imageTexture_1;
 uniform sampler2D imageTexture_2;
 uniform sampler2D imageTexture_3;
+uniform sampler2D imageTexture_4;
 
 uniform sampler2D prevPassTexture;
 
@@ -61,24 +64,28 @@ void main(void)
       if(goodTex_3 == 1){
         nColor += sampleColor(imageTexture_3, texCoordsFrag_3);
       }
+      if(goodTex_4 == 1){
+        nColor += sampleColor(imageTexture_4, texCoordsFrag_4);
+      }
+
 //        prevPassColor.rgb += colorFrag.rgb * colorFrag.a;
 //    }
 
     if(lastPass){
         nColor /= nColor.a;
 
-//        vec3 lightDirection = (lightViewMatrix * vec4(0.0, 0.0, 1.0, 0.0)).xyz;
-//        lightDirection = normalize(lightDirection);
+        vec3 lightDirection = (lightViewMatrix * vec4(0.0, 0.0, 1.0, 0.0)).xyz;
+        lightDirection = normalize(lightDirection);
 
-//        vec3 lightReflection = reflect(-lightDirection, normal);
-//        vec3 eyeDirection = -normalize(vert.xyz);
-//        float shininess = 100.0;
+        vec3 lightReflection = reflect(-lightDirection, normal);
+        vec3 eyeDirection = -normalize(vert.xyz);
+        float shininess = 100.0;
 
-//        vec4 ambientLight = nColor * 0.5;
-//        vec4 diffuseLight = nColor * 0.4 * max(dot(lightDirection, normal),0.0);
-//        vec4 specularLight = vec4(1.0) *  max(pow(dot(lightReflection, eyeDirection), shininess),0.0);
+        vec4 ambientLight = nColor * 0.5;
+        vec4 diffuseLight = nColor * 0.4 * max(dot(lightDirection, normal),0.0);
+        vec4 specularLight = vec4(1.0) *  max(pow(dot(lightReflection, eyeDirection), shininess),0.0);
 
-//        nColor = vec4(ambientLight.xyz + diffuseLight.xyz + specularLight.xyz, 1.0);
+        nColor = vec4(ambientLight.xyz + diffuseLight.xyz + specularLight.xyz, 1.0);
     }
     out_Color = nColor;
 

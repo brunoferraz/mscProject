@@ -475,7 +475,7 @@ public:
         bool multipass = true;
         bool lastpass = false;
         int totalTextures = multiTexObj.getNumPhotos();
-        int limitPerPass = 4;
+        int limitPerPass = 5;
         int loops = totalTextures/limitPerPass;
         int resto = totalTextures%limitPerPass;
 
@@ -486,6 +486,7 @@ public:
         if(resto>0){
             counter++;
         }
+
 
         cout <<"Total number of textures.." << totalTextures << endl;
         cout <<"Texture limit per pass...." << limitPerPass << endl;
@@ -498,6 +499,10 @@ public:
         counter = 0;
         while(counter < loops)
         {
+            if(counter == (loops - 1))
+            {
+                lastpass = true;
+            }
             int texturesPerPass = limitPerPass;
             if(lastpass && resto !=0) texturesPerPass = resto;
 
@@ -518,23 +523,20 @@ public:
 
                     mPassRender.setUniform("prevPassTexture", fboMPass->bindAttachment(readBuffer));
 
-                    texturesPerPass = 4;
+                    cout <<  texturesPerPass << endl;
+//                    texturesPerPass = 4;
                     for(int i=0; i<texturesPerPass; i++){
                         string imageTexture = "imageTexture_" + std::to_string(i);
-                        mPassRender.setUniform(imageTexture.c_str(),  multiTexObj.getBaseTextureAt(i + (counter * (texturesPerPass-1)))->bind());
+                        mPassRender.setUniform(imageTexture.c_str(),  multiTexObj.getBaseTextureAt(i + (counter * (limitPerPass)))->bind());
                     }
 
                     mesh.bindBuffers();
 
-//                    glBindVertexArray(mesh.get_vao_id()); //Vertex Array Object
-//                    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.get_index_buffer_id());
-
-//                    mesh.getAttribute("in_Position")->enable(mPassRender.getAttributeLocation("in_Position"));
-//                    mesh.getAttribute("in_Normal")->enable(mPassRender.getAttributeLocation("in_Normal"));
-
+                    mesh.getAttribute("in_Position")->enable(mPassRender.getAttributeLocation("in_Position"));
+                    mesh.getAttribute("in_Normal")->enable(mPassRender.getAttributeLocation("in_Normal"));
 
                     for(int i=0; i< texturesPerPass; i++){
-                        string imageID = "imageID_" + std::to_string(i + (counter * (texturesPerPass-1)));
+                        string imageID = "imageID_" + std::to_string(i + (counter * (limitPerPass)));
                         string in_coordText = "in_coordText_" + std::to_string(i);
                         mesh.getAttribute(imageID.c_str())->enable(mPassRender.getAttributeLocation(in_coordText.c_str()));
                     }
@@ -553,11 +555,7 @@ public:
             GLuint temp = readBuffer;
             readBuffer = writeBuffer;
             writeBuffer = temp;
-            multipass = true;
-            if(counter == (loops - 2))
-            {
-                lastpass = true;
-            }
+
             counter++;
         }
         renderFbo(*fboMPass, quad, readBuffer);

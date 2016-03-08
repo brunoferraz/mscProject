@@ -24,6 +24,7 @@ out vec2 texCoords_0;
 out vec2 texCoords_1;
 out vec2 texCoords_2;
 out vec2 texCoords_3;
+out vec2 texCoords_4;
 
 out float depth;
 
@@ -44,7 +45,7 @@ uniform float numImages;
 //uniform sampler2D imageTexture_1;
 //uniform sampler2D imageTexture_2;
 //uniform sampler2D imageTexture_3;
-uniform sampler2D imageTexture_4;
+//uniform sampler2D imageTexture_4;
 uniform sampler2D imageTexture_5;
 uniform sampler2D imageTexture_6;
 uniform sampler2D imageTexture_7;
@@ -76,11 +77,12 @@ void main(void)
         gl_Position = (projectionMatrix * modelViewMatrix) * in_Position;
 //        color = vec4(0.0);
 
-
         texCoords_0 = in_coordText_0.xy;
         texCoords_1 = in_coordText_1.xy;
         texCoords_2 = in_coordText_2.xy;
         texCoords_3 = in_coordText_3.xy;
+        texCoords_4 = in_coordText_4.xy;
+
 
 //        color += sampleColor(imageTexture_0, in_coordText_0);
 //        color += sampleColor(imageTexture_1, in_coordText_1);

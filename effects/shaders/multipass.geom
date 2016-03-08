@@ -8,12 +8,14 @@ in vec2 texCoords_0[3];
 in vec2 texCoords_1[3];
 in vec2 texCoords_2[3];
 in vec2 texCoords_3[3];
+in vec2 texCoords_4[3];
 
 flat out int goodtriangle;
 flat out int goodTex_0;
 flat out int goodTex_1;
 flat out int goodTex_2;
 flat out int goodTex_3;
+flat out int goodTex_4;
 
 out vec4 colorFrag;
 out vec3 normalFrag;
@@ -21,6 +23,7 @@ out vec2 texCoordsFrag_0;
 out vec2 texCoordsFrag_1;
 out vec2 texCoordsFrag_2;
 out vec2 texCoordsFrag_3;
+out vec2 texCoordsFrag_4;
 
 void main() {
 
@@ -29,7 +32,7 @@ void main() {
     goodTex_1 = 1;
     goodTex_2 = 1;
     goodTex_3 = 1;
-
+    goodTex_4 = 1;
     for(int i = 0; i < 3; i ++)
     {
         if(texCoords_0[i].x <= 0 || texCoords_0[i].y <= 0)
@@ -50,6 +53,10 @@ void main() {
             goodtriangle = 0;
             goodTex_3 = 0;
         };
+        if(texCoords_4[i].x <= 0 || texCoords_4[i].y <= 0){
+            goodtriangle = 0;
+            goodTex_4 = 0;
+        };
     }
 
         gl_Position = gl_in[0].gl_Position;
@@ -58,6 +65,7 @@ void main() {
         texCoordsFrag_1 = texCoords_1[0];
         texCoordsFrag_2 = texCoords_2[0];
         texCoordsFrag_3 = texCoords_3[0];
+        texCoordsFrag_4 = texCoords_4[0];
         EmitVertex();
 
         gl_Position = gl_in[1].gl_Position;
@@ -66,6 +74,7 @@ void main() {
         texCoordsFrag_1 = texCoords_1[1];
         texCoordsFrag_2 = texCoords_2[1];
         texCoordsFrag_3 = texCoords_3[1];
+        texCoordsFrag_4 = texCoords_4[1];
         EmitVertex();
 
         gl_Position = gl_in[2].gl_Position;
@@ -74,6 +83,7 @@ void main() {
         texCoordsFrag_1 = texCoords_1[2];
         texCoordsFrag_2 = texCoords_2[2];
         texCoordsFrag_3 = texCoords_3[2];
+        texCoordsFrag_4 = texCoords_4[2];
         EmitVertex();
 
         EndPrimitive();
