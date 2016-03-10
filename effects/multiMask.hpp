@@ -46,8 +46,11 @@ private:
     Shader phong_shader;
     Shader depthMap;
     Shader maskPass;
+    Shader maskFusePass;
+    Shader maskAnglePass;
     Shader multiTF;
     Shader mPassRender;
+
 
 
     Shader showFBO;
@@ -58,6 +61,7 @@ private:
     Framebuffer *fboDepthMap;
     Framebuffer *fboMPass;
     Framebuffer *fboMask;
+    Framebuffer *fboMaskAngle;
     Framebuffer *currentFBO;
 
     Mesh quad;
@@ -112,12 +116,14 @@ public:
     virtual void initialize (void)
     {
         // searches in default shader directory (/shaders) for shader files phongShader.(vert,frag,geom,comp)
-        loadShader(depthMap,       "nonnormdepthmap");
-//        loadShader(depthMap,       "depthmap");
-        loadShader(phong_shader,   "phongshader");
-        loadShader(mPassRender,    "multipass");
-        loadShader(showFBO,        "showFbo");
-        loadShader(maskPass,       "maskpass");
+//        loadShader(depthMap,        "nonnormdepthmap");
+
+        loadShader(depthMap,      "depthmap");
+        loadShader(phong_shader,    "phongshader");
+        loadShader(mPassRender,     "multipass");
+        loadShader(showFBO,         "showFbo");
+        loadShader(maskPass,        "maskpass");
+        loadShader(maskAnglePass,   "maskanglepass");
 
         //Initialize multiTF using coordtf shaders
         multiTF.load("coordtf", shaders_dir);
@@ -125,9 +131,10 @@ public:
         multiTF.initializeTF(1,vars);
         shaders_list.push_back(&multiTF);
 
-        fboDepthMap = new Framebuffer();
-        fboMPass    = new Framebuffer();
-        fboMask     = new Framebuffer();
+        fboDepthMap     = new Framebuffer();
+        fboMPass        = new Framebuffer();
+        fboMask         = new Framebuffer();
+        fboMaskAngle    = new Framebuffer();
 
         quad.createQuad();
 
@@ -226,6 +233,44 @@ public:
         renderFbo(*fboMask, quad, ID_MaskDepth);
     }
 
+    void prepareMaskAnglePass(Tucano::Mesh& mesh, const Tucano::Camera& camera, const Tucano::Camera& lightTrackball)
+    {
+
+        Eigen::Vector4f viewPort = camera.getViewport();
+        Eigen::Vector2i viewport_size = camera.getViewportSize();
+        int size = 1;
+        viewPort << 0, 0, viewport_size[0] * size, viewport_size[1] * size;
+        glViewport(viewPort[0], viewPort[1], viewPort[2], viewPort[3]);
+
+        if(fboMaskAngle->getWidth() != viewport_size[0] || fboMaskAngle->getHeight() != viewport_size[1])
+        {
+            fboMaskAngle->create(viewport_size[0], viewport_size[1], 1);
+        }
+
+        fboMaskAngle->clearAttachments();
+        fboMaskAngle->bindRenderBuffer(ID_MaskAngle);
+
+            maskAnglePass.bind();
+            maskAnglePass.setUniform("projectionMatrix", camera.getProjectionMatrix());
+            maskAnglePass.setUniform("modelMatrix", mesh.getModelMatrix());
+            maskAnglePass.setUniform("viewMatrix", camera.getViewMatrix());
+
+            mesh.setAttributeLocation(maskAnglePass);
+
+            glEnable(GL_DEPTH_TEST);
+            mesh.render();
+            maskPass.unbind();
+
+        fboMaskAngle->unbind();
+        fboMaskAngle->clearDepth();
+        renderFbo(*fboMaskAngle, quad);
+    }
+
+    void fuseMasks(Tucano::Mesh& mesh, const Tucano::Camera& camera, const Tucano::Camera& lightTrackball)
+    {
+
+    }
+
     void updateTF (MultiTextureManagerObj& multiTexObj, const Tucano::Camera& camera, const Tucano::Camera& lightTrackball)
     {
         Mesh &mesh = *multiTexObj.getMesh();
@@ -313,7 +358,9 @@ public:
             for(int i = 0; i < total ; i++){
                 multiTextObj.calibrateCamera(cam);
                 depthMapRender(*multiTextObj.getMesh(), cam, lightTrackball);
-                prepareMaskPass(*multiTextObj.getMesh(), cam, lightTrackball);
+                prepareMaskAnglePass(*multiTextObj.getMesh(), cam, lightTrackball);
+                fuseMasks(*multiTextObj.getMesh(), cam, lightTrackball);
+
 //                updateTF(multiTextObj, cam, lightTrackball);
 //                multiTextObj.nextPhoto();
             }

@@ -64,6 +64,10 @@ OTHER_FILES += ./effects/shaders/rendertexture.vert \
                ./effects/shaders/nonnormdepthmap.frag \
                ./effects/shaders/maskpass.vert \
                ./effects/shaders/maskpass.frag \
+               ./effects/shaders/maskfusepass.vert \
+               ./effects/shaders/maskfusepass.frag \
+               ./effects/shaders/maskanglepass.vert \
+               ./effects/shaders/maskanglepass.frag \
                ./effects/shaders/coordtf.vert \
                ./effects/shaders/coordtf.frag \
                ./effects/shaders/showFbo.vert \
