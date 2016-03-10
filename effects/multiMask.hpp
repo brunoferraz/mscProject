@@ -112,7 +112,8 @@ public:
     virtual void initialize (void)
     {
         // searches in default shader directory (/shaders) for shader files phongShader.(vert,frag,geom,comp)
-        loadShader(depthMap,       "depthmap");
+        loadShader(depthMap,       "nonnormdepthmap");
+//        loadShader(depthMap,       "depthmap");
         loadShader(phong_shader,   "phongshader");
         loadShader(mPassRender,    "multipass");
         loadShader(showFBO,        "showFbo");
@@ -179,6 +180,18 @@ public:
     }
     void prepareMaskPass(Tucano::Mesh& mesh, const Tucano::Camera& camera, const Tucano::Camera& lightTrackball)
     {
+//        Eigen::Vector2i sizeBuffer = fboDepthMap->getDimensions();
+//        float min = 0;
+//        float max = 0;
+//        for(int i =0; i< sizeBuffer(0); i++){
+//            for(int j = 0; i < sizeBuffer(1); j++){
+//                Eigen::Vector4f c = fboDepthMap->readPixel(0, Eigen::Vector2i(i, j));
+//                if(c(0)<min) min = c(0);
+//                if(c(0)>max) max = c(0);
+//            }
+//        }
+//        cout<< min <<  max << endl;
+
         Eigen::Vector4f viewPort = camera.getViewport();
         Eigen::Vector2i viewport_size = camera.getViewportSize();
         int size = 1;
@@ -189,9 +202,10 @@ public:
         {
             fboMask->create(viewport_size[0], viewport_size[1], 3);
         }
+
         fboMask->clearAttachments();
         fboMask->bindRenderBuffers(ID_MaskAngle, ID_MaskDepth, ID_MaskBorder);
-//            cout << viewport_size << endl;
+//          cout << viewport_size << endl;
             maskPass.bind();
             maskPass.setUniform("projectionMatrix", camera.getProjectionMatrix());
             maskPass.setUniform("modelMatrix", mesh.getModelMatrix());
@@ -300,11 +314,9 @@ public:
                 depthMapRender(*multiTextObj.getMesh(), cam, lightTrackball);
                 prepareMaskPass(*multiTextObj.getMesh(), cam, lightTrackball);
 //                updateTF(multiTextObj, cam, lightTrackball);
-
-//                fboDepthMap->saveAsPPM("depth.ppm", ID_DepthTexture);
 //                multiTextObj.nextPhoto();
             }
-//            multiTextObj.changePhotoReferenceTo(0);
+//          multiTextObj.changePhotoReferenceTo(0);
             firstRenderFlag = false;
          }
 //        renderMultiPass(multiTextObj, camera, lightTrackball);

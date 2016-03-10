@@ -60,6 +60,8 @@ OTHER_FILES += ./effects/shaders/rendertexture.vert \
                ./effects/shaders/rendertexture.frag \
                ./effects/shaders/depthmap.vert \
                ./effects/shaders/depthmap.frag \
+               ./effects/shaders/nonnormdepthmap.vert \
+               ./effects/shaders/nonnormdepthmap.frag \
                ./effects/shaders/maskpass.vert \
                ./effects/shaders/maskpass.frag \
                ./effects/shaders/coordtf.vert \
