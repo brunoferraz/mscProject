@@ -180,6 +180,7 @@ public:
     }
     void prepareMaskPass(Tucano::Mesh& mesh, const Tucano::Camera& camera, const Tucano::Camera& lightTrackball)
     {
+
 //        Eigen::Vector2i sizeBuffer = fboDepthMap->getDimensions();
 //        float min = 0;
 //        float max = 0;

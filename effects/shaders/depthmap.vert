@@ -15,6 +15,5 @@ void main(void)
     vec4 proj = viewMatrix * modelMatrix * in_Position;
     depth = -(proj.z - near) / (far - near);
 
-
     gl_Position = projectionMatrix * proj;
 }

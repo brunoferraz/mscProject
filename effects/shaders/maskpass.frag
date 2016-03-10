@@ -15,9 +15,10 @@ void main(void)
 //    out_Color = vec4(depth, depth, depth, 1.0);
 //    out_Angle   = vec4(1.0, 0.0, 0.0, 1.0);
     vec2 coord = vec2(gl_FragCoord.x/viewportSize.x, gl_FragCoord.y/viewportSize.y);
-    vec3 eyeDirection = -normalize(vert.xyz);
+
 
     //ANGLE
+    vec3 eyeDirection = -normalize(vert.xyz);
     float angle = dot(eyeDirection, normal);
 
     //BORDER
