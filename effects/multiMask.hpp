@@ -386,12 +386,12 @@ public:
     void render(MultiTextureManagerObj &multiTextObj, const Camera &camera, const Camera &lightTrackball)
     {
         Mesh &mesh = *multiTextObj.getMesh();
-//        if(firstRenderFlag)
+        if(firstRenderFlag)
         {
             Tucano::Camera cam;
             cam.setViewport(camera.getViewport());
             int total = multiTextObj.getNumPhotos();
-            total = 1;
+//            total = 1;
             for(int i = 0; i < total ; i++){
                 multiTextObj.calibrateCamera(cam);
                 depthMapRender(*multiTextObj.getMesh(), cam, lightTrackball);
@@ -399,13 +399,13 @@ public:
 
                 fuseMasks(*multiTextObj.getMesh(), cam, lightTrackball);
 
-//                updateTF(multiTextObj, cam, lightTrackball);
-//                multiTextObj.nextPhoto();
+                updateTF(multiTextObj, cam, lightTrackball);
+                multiTextObj.nextPhoto();
             }
-//          multiTextObj.changePhotoReferenceTo(0);
+          multiTextObj.changePhotoReferenceTo(0);
             firstRenderFlag = false;
          }
-//        renderMultiPass(multiTextObj, camera, lightTrackball);
+        renderMultiPass(multiTextObj, camera, lightTrackball);
     }
 
     void renderMultiPass(MultiTextureManagerObj& multiTexObj, const Tucano::Camera& camera, const Tucano::Camera& lightTrackball)
