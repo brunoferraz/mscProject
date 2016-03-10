@@ -66,7 +66,7 @@ private:
     Framebuffer *fboMaskAngle;
     Framebuffer *currentFBO;
 
-    vector<Framebuffer> maskList;
+    vector<Framebuffer *> maskList;
 
     Mesh quad;
 
@@ -399,10 +399,13 @@ public:
 
                 fuseMasks(*multiTextObj.getMesh(), cam, lightTrackball);
 
+
+                maskList.push_back(fboMasksFused);
+
                 updateTF(multiTextObj, cam, lightTrackball);
                 multiTextObj.nextPhoto();
             }
-          multiTextObj.changePhotoReferenceTo(0);
+            multiTextObj.changePhotoReferenceTo(0);
             firstRenderFlag = false;
          }
         renderMultiPass(multiTextObj, camera, lightTrackball);
@@ -446,7 +449,8 @@ public:
 //        cout <<"Texture on last pass......" << resto << endl;
 //        cout <<"" << endl;
 
-//        counter = 1;
+        counter = 1;
+        limitPerPass = 1;
         loops = counter;
         counter = 0;
         while(counter < loops)
@@ -479,7 +483,10 @@ public:
 //                    texturesPerPass = 4;
                     for(int i=0; i<texturesPerPass; i++){
                         string imageTexture = "imageTexture_" + std::to_string(i);
+                        string maskTexture = "mask_" + std::to_string(i);
                         mPassRender.setUniform(imageTexture.c_str(),  multiTexObj.getBaseTextureAt(i + (counter * (limitPerPass)))->bind());
+                        mPassRender.setUniform(maskTexture.c_str(),  maskList.at(i + (counter * (limitPerPass)))->bindAttachment(0));
+
                     }
 
                     mesh.bindBuffers();
@@ -499,6 +506,7 @@ public:
                     for(int i =0; i < multiTexObj.getNumPhotos(); i++)
                     {
                         multiTexObj.getBaseTextureAt(i)->unbind();
+                        maskList.at(i)->unbind();
                     }
                 mPassRender.unbind();
             fboMPass->unbind();

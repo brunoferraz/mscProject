@@ -27,6 +27,12 @@ uniform bool lastPass;
 uniform bool multiPass;
 uniform vec2 viewportSize;
 
+uniform sampler2D mask_0;
+uniform sampler2D mask_1;
+uniform sampler2D mask_2;
+uniform sampler2D mask_3;
+uniform sampler2D mask_4;
+
 uniform sampler2D imageTexture_0;
 uniform sampler2D imageTexture_1;
 uniform sampler2D imageTexture_2;
@@ -49,11 +55,13 @@ void main(void)
     vec2 prevPassCoord  = vec2(gl_FragCoord.x/ viewportSize.x, gl_FragCoord.y/ viewportSize.y);
     vec4 prevPassColor  = texture2D(prevPassTexture, prevPassCoord);
     vec4 nColor = vec4(0);
-
+    vec4 mask;
       nColor = prevPassColor;
 //    if(goodtriangle == 1){
       if(goodTex_0 == 1){
-        nColor += sampleColor(imageTexture_0, texCoordsFrag_0);
+        mask = texture2D(mask_0, texCoordsFrag_0);
+        nColor.rgb += sampleColor(imageTexture_0, texCoordsFrag_0).rgb * mask.r;
+        nColor.a += mask.r;
       }
       if(goodTex_1 == 1){
         nColor += sampleColor(imageTexture_1, texCoordsFrag_1);
