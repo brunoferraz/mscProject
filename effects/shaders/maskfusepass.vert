@@ -3,9 +3,6 @@
 in vec4 in_Position;
 in vec3 in_Normal;
 
-uniform float near;
-uniform float far;
-
 out float depth;
 out vec3 normal;
 out vec4 vert;
@@ -23,7 +20,7 @@ void main(void)
     vert = modelViewMatrix * in_Position;
 
     vec4 proj = viewMatrix * modelMatrix * in_Position;
-    depth = -(proj.z - near) / (far - near);
+
 
 
     gl_Position = projectionMatrix * proj;
