@@ -28,6 +28,9 @@ void GLWidget::initialize()
     multi.setShadersDir(shaders_dir);
     multi.initialize();
 
+    multiMask.setShadersDir(shaders_dir);
+    multiMask.initialize();
+
     calibrationCamera.setViewport(Eigen::Vector2f(this->size().width(), this->size().height()));
     mTextManagerObj.calibrateCamera(calibrationCamera);
 //    mTextManagerObj.getMesh()->normalizeModelMatrix();
@@ -49,7 +52,10 @@ void GLWidget::paintGL()
 
 
 //    phong.render(*mTextManagerObj.getMesh(), *currentCamera, light_trackball);
-      multi.render(mTextManagerObj, *currentCamera, light_trackball);
+
+//      multi.render(mTextManagerObj, *currentCamera, light_trackball);
+      multiMask.render(mTextManagerObj, *currentCamera, light_trackball);
+
 //    depthMap.render(*mTextManagerObj.getMesh(), calibrationCamera, light_trackball);
 
     if(Interface::showBackgroundImage)
@@ -69,7 +75,7 @@ void GLWidget::reload()
     phong.reloadShaders();
     depthMap.reloadShaders();
     renderTexture.reloadShaders();
-    multi.reloadShaders();
+    multiMask.reloadShaders();
 }
 
 void GLWidget::changeCam()
@@ -91,7 +97,7 @@ void GLWidget::saveImage()
      std::string path = "autoSave";
      path += QString(QDateTime::currentDateTime().toString("yy_MMM_dd_hh_mm_ss")).toUtf8().constData();
      path += ".ppm";
-     multi.saveImage(path);
+     multiMask.saveImage(path);
 }
 
 void GLWidget::mousePressEvent(QMouseEvent *ev)
@@ -100,7 +106,7 @@ void GLWidget::mousePressEvent(QMouseEvent *ev)
     if(Interface::eyeDropper){
         Eigen::Vector2i viewPort = currentCamera->getViewportSize();
         Eigen::Vector2i pos = Eigen::Vector2i(ev->x(), viewPort(1) - ev->y()  );
-        Eigen::Vector4f c = multi.getColorAt(pos);
+        Eigen::Vector4f c = multiMask.getColorAt(pos);
         QString info;
         info.append("X: " + QString::number(ev->x()) + "  Y: " + QString::number(ev->y()) +"\n\n");
         info.append("R: " + QString::number(c(0)) + "\n");

@@ -10,6 +10,7 @@
 #include <phongshader.hpp>
 #include <depthMap.hpp>
 #include <multi.hpp>
+#include <multiMask.hpp>
 #include <interface.h>
 #include <QDebug>
 #include <QDate>
@@ -47,6 +48,7 @@ private:
     Effects::Phong phong;
     Effects::DepthMap depthMap;
     Effects::Multi multi;
+    Effects::MultiMask multiMask;
     Effects::RenderTexture renderTexture;
     Texture image_Texture;
 protected:

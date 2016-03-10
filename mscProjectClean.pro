@@ -50,6 +50,7 @@ HEADERS  += mainwindow.h \
     ./effects/phongshader.hpp \
     ./effects/rendertexture.hpp \
     ./effects/multi.hpp \
+    ./effects/multiMask.hpp \
     ./effects/depthMap.hpp \
     interface.h
 
@@ -59,6 +60,8 @@ OTHER_FILES += ./effects/shaders/rendertexture.vert \
                ./effects/shaders/rendertexture.frag \
                ./effects/shaders/depthmap.vert \
                ./effects/shaders/depthmap.frag \
+               ./effects/shaders/maskpass.vert \
+               ./effects/shaders/maskpass.frag \
                ./effects/shaders/coordtf.vert \
                ./effects/shaders/coordtf.frag \
                ./effects/shaders/showFbo.vert \
