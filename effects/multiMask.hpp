@@ -277,6 +277,7 @@ public:
 
     void fuseMasks(Tucano::Mesh& mesh, const Tucano::Camera& camera, const Tucano::Camera& lightTrackball)
     {
+        fboMasksFused = new Framebuffer();
         Eigen::Vector4f viewPort = camera.getViewport();
         Eigen::Vector2i viewport_size = camera.getViewportSize();
         int size = 1;
@@ -449,8 +450,8 @@ public:
 //        cout <<"Texture on last pass......" << resto << endl;
 //        cout <<"" << endl;
 
-        counter = 1;
-        limitPerPass = 1;
+//        counter = 1;
+//        limitPerPass = 1;
         loops = counter;
         counter = 0;
         while(counter < loops)
