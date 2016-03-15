@@ -50,10 +50,9 @@ private:
     Shader maskFusePass;
     Shader maskAnglePass;
     Shader maskDepthPass;
+    Shader maskBorderPass;
     Shader multiTF;
     Shader mPassRender;
-
-
 
     Shader showFBO;
 
@@ -63,8 +62,12 @@ private:
     Framebuffer *fboDepthMap;
     Framebuffer *fboMPass;
     Framebuffer *fboMask;
+
     Framebuffer *fboMasksFused;
     Framebuffer *fboMaskAngle;
+    Framebuffer *fboMaskDepth;
+    Framebuffer *fboMaskBorder;
+
     Framebuffer *currentFBO;
 
     vector<Framebuffer *> maskList;
@@ -100,8 +103,8 @@ public:
         ID_DepthTextureNonNorm = 1;
 
         ID_MaskAngle = 0;
-        ID_MaskDepth = 1;
-        ID_MaskBorder = 2;
+        ID_MaskDepth = 0;
+        ID_MaskBorder = 0;
 
         writeBuffer = 0;
         readBuffer = 1;
@@ -114,6 +117,9 @@ public:
         delete fboDepthMap;
         delete fboMPass;
         delete fboMask;
+        delete fboMaskDepth;
+        delete fboMaskBorder;
+        delete fboMaskAngle;
         delete currentFBO;
         delete fboMasksFused;
     }
@@ -134,6 +140,7 @@ public:
         loadShader(maskFusePass,    "maskfusepass");
         loadShader(maskAnglePass,   "maskanglepass");
         loadShader(maskDepthPass,   "maskdepthpass");
+        loadShader(maskBorderPass, "maskborderpass");
 
         //Initialize multiTF using coordtf shaders
         multiTF.load("coordtf", shaders_dir);
@@ -146,11 +153,8 @@ public:
         fboMask         = new Framebuffer();
         fboMaskAngle    = new Framebuffer();
         fboMasksFused   = new Framebuffer();
-
-
-
-
-
+        fboMaskDepth    = new Framebuffer();
+        fboMaskBorder   = new Framebuffer();
 
         quad.createQuad();
 
@@ -204,18 +208,6 @@ public:
     }
     void prepareMaskPass(Tucano::Mesh& mesh, const Tucano::Camera& camera, const Tucano::Camera& lightTrackball)
     {
-
-//        Eigen::Vector2i sizeBuffer = fboDepthMap->getDimensions();
-//        float min = 0;
-//        float max = 0;
-//        for(int i =0; i< sizeBuffer(0); i++){
-//            for(int j = 0; i < sizeBuffer(1); j++){
-//                Eigen::Vector4f c = fboDepthMap->readPixel(0, Eigen::Vector2i(i, j));
-//                if(c(0)<min) min = c(0);
-//                if(c(0)>max) max = c(0);
-//            }
-//        }
-//        cout<< min <<  max << endl;
 
         Eigen::Vector4f viewPort = camera.getViewport();
         Eigen::Vector2i viewport_size = camera.getViewportSize();
@@ -276,7 +268,7 @@ public:
 
             glEnable(GL_DEPTH_TEST);
             mesh.render();
-            maskPass.unbind();
+            maskAnglePass.unbind();
 
         fboMaskAngle->unbind();
         fboMaskAngle->clearDepth();
@@ -287,16 +279,82 @@ public:
         vector<GLfloat> pixels;
         fboDepthMap->readBuffer(ID_DepthTextureNonNorm, pixels);
 
+        //Get min and max from depthMaps
         GLfloat minN = 0;
         GLfloat maxN = 0;
         for(int i = 0; i < pixels.size(); i+=4)
         {
             if(pixels.at(i)< minN) minN = pixels.at(i);
-            if(pixels.at(i)>maxN) maxN = pixels.at(i);
+            if(pixels.at(i)> maxN) maxN = pixels.at(i);
         }
-        cout << minN << "  fdsfds  " << maxN << endl;
-    }
 
+        Eigen::Vector4f viewPort = camera.getViewport();
+        Eigen::Vector2i viewport_size = camera.getViewportSize();
+        int size = 1;
+        viewPort << 0, 0, viewport_size[0] * size, viewport_size[1] * size;
+        glViewport(viewPort[0], viewPort[1], viewPort[2], viewPort[3]);
+        //create frame buffers
+        if(fboMaskDepth->getWidth() != viewport_size[0] || fboMaskDepth->getHeight() != viewport_size[1])
+        {
+            fboMaskDepth->create(viewport_size[0], viewport_size[1], 1);
+        }
+
+        //render image
+        fboMaskDepth->clearAttachments();
+        fboMaskDepth->bindRenderBuffer(0);
+
+            maskDepthPass.bind();
+            maskDepthPass.setUniform("projectionMatrix", camera.getProjectionMatrix());
+            maskDepthPass.setUniform("modelMatrix", mesh.getModelMatrix());
+            maskDepthPass.setUniform("viewMatrix", camera.getViewMatrix());
+            maskDepthPass.setUniform("minDepth", minN);
+            maskDepthPass.setUniform("maxDepth", maxN);
+            maskDepthPass.setUniform("depthMap", fboDepthMap->bindAttachment(ID_DepthTextureNonNorm));
+            maskDepthPass.setUniform("viewportSize",  Eigen::Vector2f(774.0, 518.0));
+
+            mesh.setAttributeLocation(maskDepthPass);
+
+            glEnable(GL_DEPTH_TEST);
+            mesh.render();
+            maskDepthPass.unbind();
+
+        fboMaskDepth->unbind();
+        fboMaskDepth->clearDepth();
+    }
+    void prepareMaskBorderPass(Tucano::Mesh& mesh, const Tucano::Camera& camera, const Tucano::Camera& lightTrackball)
+    {
+        Eigen::Vector4f viewPort = camera.getViewport();
+        Eigen::Vector2i viewport_size = camera.getViewportSize();
+        int size = 1;
+        viewPort << 0, 0, viewport_size[0] * size, viewport_size[1] * size;
+        glViewport(viewPort[0], viewPort[1], viewPort[2], viewPort[3]);
+
+        if(fboMaskBorder->getWidth() != viewport_size[0] || fboMaskBorder->getHeight() != viewport_size[1])
+        {
+            fboMaskBorder->create(viewport_size[0], viewport_size[1], 1);
+        }
+
+        fboMaskBorder->clearAttachments();
+        fboMaskBorder->bindRenderBuffer(ID_MaskBorder);
+
+            maskBorderPass.bind();
+            maskBorderPass.setUniform("projectionMatrix", camera.getProjectionMatrix());
+            maskBorderPass.setUniform("modelMatrix", mesh.getModelMatrix());
+            maskBorderPass.setUniform("viewMatrix", camera.getViewMatrix());
+            maskBorderPass.setUniform("depthMap", fboDepthMap->bindAttachment(ID_DepthTextureNonNorm));
+            maskBorderPass.setUniform("viewportSize",  Eigen::Vector2f(774.0, 518.0));
+
+            mesh.setAttributeLocation(maskBorderPass);
+
+            glEnable(GL_DEPTH_TEST);
+            mesh.render();
+            maskBorderPass.unbind();
+
+        fboMaskBorder->unbind();
+        fboMaskBorder->clearDepth();
+
+        renderFbo(*fboMaskBorder, quad);
+    }
     void fuseMasks(Tucano::Mesh& mesh, const Tucano::Camera& camera, const Tucano::Camera& lightTrackball)
     {
         fboMasksFused = new Framebuffer();
@@ -317,9 +375,9 @@ public:
             maskFusePass.setUniform("projectionMatrix", camera.getProjectionMatrix());
             maskFusePass.setUniform("modelMatrix", mesh.getModelMatrix());
             maskFusePass.setUniform("viewMatrix", camera.getViewMatrix());
-            maskFusePass.setUniform("angleMask",    fboMaskAngle->bindAttachment(ID_MaskAngle));
             maskFusePass.setUniform("viewportSize",    Eigen::Vector2f(viewport_size[0], viewport_size[1]));
-
+            maskFusePass.setUniform("angleMask",    fboMaskAngle->bindAttachment(ID_MaskAngle));
+            maskFusePass.setUniform("depthMask",    fboMaskDepth->bindAttachment(0));
 
             mesh.setAttributeLocation(maskFusePass);
 
@@ -329,6 +387,8 @@ public:
 
         fboMasksFused->unbind();
         fboMasksFused->clearDepth();
+
+//        renderFbo(*fboMasksFused, quad);
     }
 
     void updateTF (MultiTextureManagerObj& multiTexObj, const Tucano::Camera& camera, const Tucano::Camera& lightTrackball)
@@ -409,29 +469,31 @@ public:
     void render(MultiTextureManagerObj &multiTextObj, const Camera &camera, const Camera &lightTrackball)
     {
         Mesh &mesh = *multiTextObj.getMesh();
-        if(firstRenderFlag)
+//        if(firstRenderFlag)
         {
             Tucano::Camera cam;
             cam.setViewport(camera.getViewport());
             int total = multiTextObj.getNumPhotos();
-//            total = 1;
+            total = 1;
             for(int i = 0; i < total ; i++){
                 multiTextObj.calibrateCamera(cam);
                 depthMapRender(*multiTextObj.getMesh(), cam, lightTrackball);
+
                 prepareMaskAnglePass(*multiTextObj.getMesh(), cam, lightTrackball);
                 prepareMaskDepthPass(*multiTextObj.getMesh(), cam, lightTrackball);
-                fuseMasks(*multiTextObj.getMesh(), cam, lightTrackball);
+                prepareMaskBorderPass(*multiTextObj.getMesh(), cam, lightTrackball);
 
+                fuseMasks(*multiTextObj.getMesh(), cam, lightTrackball);
 
                 maskList.push_back(fboMasksFused);
 
                 updateTF(multiTextObj, cam, lightTrackball);
-                multiTextObj.nextPhoto();
+//                multiTextObj.nextPhoto();
             }
             multiTextObj.changePhotoReferenceTo(0);
             firstRenderFlag = false;
          }
-        renderMultiPass(multiTextObj, camera, lightTrackball);
+//        renderMultiPass(multiTextObj, camera, lightTrackball);
     }
 
     void renderMultiPass(MultiTextureManagerObj& multiTexObj, const Tucano::Camera& camera, const Tucano::Camera& lightTrackball)
@@ -453,7 +515,7 @@ public:
         bool multipass = true;
         bool lastpass = false;
         int totalTextures = multiTexObj.getNumPhotos();
-        int limitPerPass = 5;
+        int limitPerPass = 4;
         int loops = totalTextures/limitPerPass;
         int resto = totalTextures%limitPerPass;
 

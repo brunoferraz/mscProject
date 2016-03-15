@@ -11,8 +11,6 @@ uniform mat4 modelMatrix;
 uniform mat4 viewMatrix;
 uniform mat4 projectionMatrix;
 
-
-
 void main(void)
 {
     mat4 modelViewMatrix = viewMatrix * modelMatrix;
@@ -22,7 +20,7 @@ void main(void)
     vert = modelViewMatrix * in_Position;
 
     vec4 proj = viewMatrix * modelMatrix * in_Position;
-//    depth = -(proj.z - near) / (far - near);
+//  depth = -(proj.z - near) / (far - near);
 
 
     gl_Position = projectionMatrix * proj;
