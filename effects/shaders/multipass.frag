@@ -64,16 +64,24 @@ void main(void)
         nColor.a += mask.r;
       }
       if(goodTex_1 == 1){
-        nColor += sampleColor(imageTexture_1, texCoordsFrag_1);
+        mask = texture2D(mask_1, texCoordsFrag_1);
+        nColor.rgb += sampleColor(imageTexture_1, texCoordsFrag_1).rgb * mask.r;
+        nColor.a += mask.r;
       }
       if(goodTex_2 == 1){
-        nColor += sampleColor(imageTexture_2, texCoordsFrag_2);
+          mask = texture2D(mask_2, texCoordsFrag_2);
+          nColor.rgb += sampleColor(imageTexture_2, texCoordsFrag_2).rgb * mask.r;
+          nColor.a += mask.r;
       }
       if(goodTex_3 == 1){
-        nColor += sampleColor(imageTexture_3, texCoordsFrag_3);
+          mask = texture2D(mask_3, texCoordsFrag_3);
+          nColor.rgb += sampleColor(imageTexture_3, texCoordsFrag_3).rgb * mask.r;
+          nColor.a += mask.r;
       }
       if(goodTex_4 == 1){
-        nColor += sampleColor(imageTexture_4, texCoordsFrag_4);
+          mask = texture2D(mask_4, texCoordsFrag_4);
+          nColor.rgb += sampleColor(imageTexture_4, texCoordsFrag_4).rgb * mask.r;
+          nColor.a += mask.r;
       }
 
 //        prevPassColor.rgb += colorFrag.rgb * colorFrag.a;
@@ -96,5 +104,6 @@ void main(void)
         nColor = vec4(ambientLight.xyz + diffuseLight.xyz + specularLight.xyz, 1.0);
     }
     out_Color = nColor;
+//    out_Color = vec4(0.5);
 
 }

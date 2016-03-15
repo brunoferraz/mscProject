@@ -11,5 +11,6 @@ uniform sampler2D angleMask;
 void main(void)
 {
     vec2 coord = vec2(gl_FragCoord.x/viewportSize.x, gl_FragCoord.y/viewportSize.y);
-    out_Color = texture2D(angleMask, coord);
+//    out_Color = texture2D(angleMask, coord);
+    out_Color = vec4(0.5);
 }

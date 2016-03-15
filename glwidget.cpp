@@ -72,9 +72,11 @@ void GLWidget::paintGL()
 
 void GLWidget::reload()
 {
-    phong.reloadShaders();
-    depthMap.reloadShaders();
-    renderTexture.reloadShaders();
+//    phong.reloadShaders();
+//    depthMap.reloadShaders();
+//    renderTexture.reloadShaders();
+//    multi.reloadShaders();
+//    multiMask.firstRenderFlag = true;
     multiMask.reloadShaders();
 }
 

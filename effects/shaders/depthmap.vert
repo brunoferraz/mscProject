@@ -5,6 +5,7 @@ uniform float near;
 uniform float far;
 
 out float depth;
+out float depthNonNorm;
 
 uniform mat4 modelMatrix;
 uniform mat4 viewMatrix;
@@ -14,6 +15,7 @@ void main(void)
 {
     vec4 proj = viewMatrix * modelMatrix * in_Position;
     depth = -(proj.z - near) / (far - near);
+    depthNonNorm = proj.z;
 
     gl_Position = projectionMatrix * proj;
 }
