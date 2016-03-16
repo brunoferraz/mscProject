@@ -51,6 +51,7 @@ private:
     Shader maskAnglePass;
     Shader maskDepthPass;
     Shader maskBorderPass;
+    Shader jumpFlood;
     Shader multiTF;
     Shader mPassRender;
 
@@ -140,7 +141,9 @@ public:
         loadShader(maskFusePass,    "maskfusepass");
         loadShader(maskAnglePass,   "maskanglepass");
         loadShader(maskDepthPass,   "maskdepthpass");
-        loadShader(maskBorderPass, "maskborderpass");
+        loadShader(maskBorderPass,  "maskborderpass");
+        loadShader(jumpFlood,       "jumpflood");
+
 
         //Initialize multiTF using coordtf shaders
         multiTF.load("coordtf", shaders_dir);
@@ -341,7 +344,7 @@ public:
             maskBorderPass.setUniform("projectionMatrix", camera.getProjectionMatrix());
             maskBorderPass.setUniform("modelMatrix", mesh.getModelMatrix());
             maskBorderPass.setUniform("viewMatrix", camera.getViewMatrix());
-            maskBorderPass.setUniform("depthMap", fboDepthMap->bindAttachment(ID_DepthTextureNonNorm));
+            maskBorderPass.setUniform("depthMap", fboDepthMap->bindAttachment(ID_DepthTextureNorm));
             maskBorderPass.setUniform("viewportSize",  Eigen::Vector2f(774.0, 518.0));
 
             mesh.setAttributeLocation(maskBorderPass);
@@ -353,7 +356,34 @@ public:
         fboMaskBorder->unbind();
         fboMaskBorder->clearDepth();
 
-        renderFbo(*fboMaskBorder, quad);
+        //JUMP FLOOD
+        Framebuffer *fboJumpFlood = new Framebuffer();
+        if(fboJumpFlood->getWidth() != viewport_size[0] || fboJumpFlood->getHeight() != viewport_size[1])
+        {
+            fboJumpFlood->create(viewport_size[0], viewport_size[1], 1);
+        }
+
+        fboJumpFlood->clearAttachments();
+        fboJumpFlood->bindRenderBuffer(0);
+
+            jumpFlood.bind();
+            jumpFlood.setUniform("projectionMatrix", camera.getProjectionMatrix());
+            jumpFlood.setUniform("modelMatrix", mesh.getModelMatrix());
+            jumpFlood.setUniform("viewMatrix", camera.getViewMatrix());
+            jumpFlood.setUniform("sobelMap", fboMaskBorder->bindAttachment(0));
+            jumpFlood.setUniform("viewportSize",  Eigen::Vector2f(774.0, 518.0));
+
+            mesh.setAttributeLocation(jumpFlood);
+
+            glEnable(GL_DEPTH_TEST);
+            mesh.render();
+            jumpFlood.unbind();
+
+        fboJumpFlood->unbind();
+        fboJumpFlood->clearDepth();
+
+        renderFbo(*fboJumpFlood, quad);
+
     }
     void fuseMasks(Tucano::Mesh& mesh, const Tucano::Camera& camera, const Tucano::Camera& lightTrackball)
     {

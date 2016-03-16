@@ -87,3 +87,5 @@ OTHER_FILES += ./effects/shaders/rendertexture.vert \
                ./effects/shaders/simplepass.frag \
                ./effects/shaders/phongshader.vert \
                ./effects/shaders/phongshader.frag \
+               ./effects/shaders/jumpflood.vert \
+               ./effects/shaders/jumpflood.frag \
