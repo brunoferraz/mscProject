@@ -14,8 +14,8 @@ void main(void)
 {
     vec2 coord = vec2(gl_FragCoord.x/viewportSize.x, gl_FragCoord.y/viewportSize.y);
 
-    float stepX = (5 * 1)/viewportSize.x;
-    float stepY = (5 * 1)/viewportSize.y;
+    float stepX = (50 * 1)/viewportSize.x;
+    float stepY = (50 * 1)/viewportSize.y;
 
     float c1 = texture2D(sobelMap, vec2(coord.x-stepX, coord.y-stepY)).x;
     float c2 = texture2D(sobelMap, vec2(coord.x, coord.y -stepY)).x;
