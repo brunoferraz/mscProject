@@ -383,7 +383,6 @@ public:
         fboJumpFlood->clearDepth();
 
         renderFbo(*fboJumpFlood, quad);
-
     }
     void fuseMasks(Tucano::Mesh& mesh, const Tucano::Camera& camera, const Tucano::Camera& lightTrackball)
     {
@@ -498,13 +497,18 @@ public:
 
     void render(MultiTextureManagerObj &multiTextObj, const Camera &camera, const Camera &lightTrackball)
     {
+//        renderMasks(multiTextObj, camera, lightTrackball);
+        renderDistance(multiTextObj, camera, lightTrackball);
+
+    }
+    void renderDistance(MultiTextureManagerObj &multiTextObj, const Camera &camera, const Camera &lightTrackball)
+    {
         Mesh &mesh = *multiTextObj.getMesh();
         if(firstRenderFlag)
         {
             Tucano::Camera cam;
             cam.setViewport(camera.getViewport());
             int total = multiTextObj.getNumPhotos();
-//            total = 1;
             for(int i = 0; i < total ; i++){
                 multiTextObj.calibrateCamera(cam);
                 depthMapRender(*multiTextObj.getMesh(), cam, lightTrackball);
@@ -523,9 +527,147 @@ public:
             multiTextObj.changePhotoReferenceTo(0);
             firstRenderFlag = false;
          }
-        renderMultiPass(multiTextObj, camera, lightTrackball);
+        renderDistanceMultiPass(multiTextObj, camera, lightTrackball);
     }
 
+    void renderMasks(MultiTextureManagerObj &multiTextObj, const Camera &camera, const Camera &lightTrackball)
+    {
+        //THIS FUNCTION IS USED TO PREPARE AND SEE MASKS WHILE THE PRODUCTION
+
+        Mesh &mesh = *multiTextObj.getMesh();
+//        if(firstRenderFlag)
+        {
+            Tucano::Camera cam;
+            cam.setViewport(camera.getViewport());
+            int total = multiTextObj.getNumPhotos();
+            total = 1;
+            for(int i = 0; i < total ; i++){
+                multiTextObj.calibrateCamera(cam);
+                depthMapRender(*multiTextObj.getMesh(), cam, lightTrackball);
+
+                prepareMaskAnglePass(*multiTextObj.getMesh(), cam, lightTrackball);
+                prepareMaskDepthPass(*multiTextObj.getMesh(), cam, lightTrackball);
+                prepareMaskBorderPass(*multiTextObj.getMesh(), cam, lightTrackball);
+
+                fuseMasks(*multiTextObj.getMesh(), cam, lightTrackball);
+
+                maskList.push_back(fboMasksFused);
+
+                updateTF(multiTextObj, cam, lightTrackball);
+//                multiTextObj.nextPhoto();
+            }
+            multiTextObj.changePhotoReferenceTo(0);
+            firstRenderFlag = false;
+         }
+
+//        renderMultiPass(multiTextObj, camera, lightTrackball);
+    }
+    void renderDistanceMultiPass(MultiTextureManagerObj& multiTexObj, const Tucano::Camera& camera, const Tucano::Camera& lightTrackball)
+    {
+        Mesh &mesh = *multiTexObj.getMesh();
+        Eigen::Vector4f viewPort = camera.getViewport();
+        Eigen::Vector2i viewPort_size = camera.getViewportSize();
+        int size = 1;
+        viewPort << 0, 0, viewPort_size[0] * size, viewPort_size[1] * size;
+        glViewport(viewPort[0], viewPort[1], viewPort[2], viewPort[3]);
+
+        if(fboMPass->getWidth() != viewPort_size[0] || fboMPass->getHeight() != viewPort_size[1])
+        {
+            fboMPass->create(viewPort_size[0], viewPort_size[1], 2);
+        }
+
+        fboMPass->clearAttachments();
+
+//        cout << camera.getCenter().transpose() << endl;
+//        cout << multiTexObj.getCenterCamera().transpose() << endl;
+        Eigen::Vector3f v = multiTexObj.getCenterCamera() * mesh.getScale();
+        Eigen::Vector3f distance = camera.getCenter() - v;
+        cout << distance.norm() << endl;
+//        for(int i = 0; i < multiTexObj.)
+
+        bool multipass = true;
+        bool lastpass = false;
+        int totalTextures = multiTexObj.getNumPhotos();
+        int limitPerPass = 4;
+        int loops = totalTextures/limitPerPass;
+        int resto = totalTextures%limitPerPass;
+
+        glDisable (GL_BLEND);
+        glEnable(GL_DEPTH_TEST);
+
+        int counter = loops;
+        if(resto>0){
+            counter++;
+        }
+
+
+        loops = counter;
+        counter = 0;
+        while(counter < loops)
+        {
+            if(counter == (loops - 1))
+            {
+                lastpass = true;
+            }
+            int texturesPerPass = limitPerPass;
+            if(lastpass && resto !=0) texturesPerPass = resto;
+
+            fboMPass->clearAttachment(writeBuffer);
+            fboMPass->bindRenderBuffer(writeBuffer);
+                mPassRender.bind();
+
+                    mPassRender.setUniform("projectionMatrix",camera.getProjectionMatrix());
+                    mPassRender.setUniform("modelMatrix",     mesh.getModelMatrix());
+                    mPassRender.setUniform("viewMatrix",      camera.getViewMatrix());
+                    mPassRender.setUniform("lightViewMatrix", lightTrackball.getViewMatrix());
+                    mPassRender.setUniform("firstPass",       true);
+                    mPassRender.setUniform("lastPass",        lastpass);
+                    mPassRender.setUniform("multiPass",       multipass);
+                    mPassRender.setUniform("numImages",       texturesPerPass);
+
+                    mPassRender.setUniform("viewportSize",    Eigen::Vector2f(viewPort_size[0], viewPort_size[1]));
+
+                    mPassRender.setUniform("prevPassTexture", fboMPass->bindAttachment(readBuffer));
+
+                    for(int i=0; i<texturesPerPass; i++){
+                        string imageTexture = "imageTexture_" + std::to_string(i);
+                        string maskTexture = "mask_" + std::to_string(i);
+                        mPassRender.setUniform(imageTexture.c_str(),  multiTexObj.getBaseTextureAt(i + (counter * (limitPerPass)))->bind());
+                        mPassRender.setUniform(maskTexture.c_str(),  maskList.at(i + (counter * (limitPerPass)))->bindAttachment(0));
+
+                    }
+
+                    mesh.bindBuffers();
+
+                    mesh.getAttribute("in_Position")->enable(mPassRender.getAttributeLocation("in_Position"));
+                    mesh.getAttribute("in_Normal")->enable(mPassRender.getAttributeLocation("in_Normal"));
+
+                    for(int i=0; i< texturesPerPass; i++){
+                        string imageID = "imageID_" + std::to_string(i + (counter * (limitPerPass)));
+                        string in_coordText = "in_coordText_" + std::to_string(i);
+                        mesh.getAttribute(imageID.c_str())->enable(mPassRender.getAttributeLocation(in_coordText.c_str()));
+                    }
+
+                    mesh.renderElements();
+                    mesh.unbindBuffers();
+
+                    for(int i =0; i < multiTexObj.getNumPhotos(); i++)
+                    {
+                        multiTexObj.getBaseTextureAt(i)->unbind();
+                        maskList.at(i)->unbind();
+                    }
+                mPassRender.unbind();
+            fboMPass->unbind();
+
+            //SWAP
+            GLuint temp = readBuffer;
+            readBuffer = writeBuffer;
+            writeBuffer = temp;
+
+            counter++;
+        }
+        renderFbo(*fboMPass, quad, readBuffer);
+    }
     void renderMultiPass(MultiTextureManagerObj& multiTexObj, const Tucano::Camera& camera, const Tucano::Camera& lightTrackball)
     {
         Mesh &mesh = *multiTexObj.getMesh();

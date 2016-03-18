@@ -36,6 +36,8 @@ public:
     Eigen::Matrix4f *getProjectionMatrix();
     Eigen::Affine3f *getViewMatrix();
     Eigen::Matrix4f *getModelMatrix();
+    Eigen::Vector3f getCenterCamera();
+
     Tucano::Texture *getBaseTexture();
     Tucano::Texture *getBaseTextureAt(int i);
     Tucano::Mesh    *getMesh();

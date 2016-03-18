@@ -68,7 +68,7 @@ bool PhotoCamera::initializeFromMeshLab(QDomElement &element)
     buildIntrinsic();
     buildProjection();
 
-//    cameraCenter = center(intrinsicMatrix.topLeftCorner(3,4)*extrinsicMatrix);
+//    cameraCenter = center(intrinsicMatrix.topLeftCorner(3,4)*extrinsicMatrix.matrix());
     cameraCenter = center(intrinsicMatrix.matrix().topLeftCorner(3,4)*extrinsicMatrix.matrix());
     return true;
 }

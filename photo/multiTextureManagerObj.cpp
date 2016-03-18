@@ -107,6 +107,17 @@ void MultiTextureManagerObj::calibrateCamera(Tucano::Camera &c)
     c.setViewMatrix(view);
 }
 
+Eigen::Vector3f MultiTextureManagerObj::getCenterCamera()
+{
+    Tucano::Camera c;
+    PhotoCamera &cam = rasterGroup.at(currentPhotoIndex)->photoCamera;
+
+    Eigen::Affine3f view = cam.extrinsicMatrix;
+    c.setProjectionMatrix(cam.projectionMatrix);
+    c.setViewMatrix(view);
+    return c.getCenter();
+}
+
 void MultiTextureManagerObj::changePhotoReferenceTo(int n)
 {
     int next = currentPhotoIndex + n;
