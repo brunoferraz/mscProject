@@ -580,8 +580,12 @@ public:
 
 //        cout << camera.getCenter().transpose() << endl;
 //        cout << multiTexObj.getCenterCamera().transpose() << endl;
-        Eigen::Vector3f v = multiTexObj.getCenterCamera() * mesh.getScale();
+//        Eigen::Vector3f v = multiTexObj.getCenterCamera() * mesh.getScale();
+        Eigen::Vector3f v = mesh.getModelMatrix().inverse() * multiTexObj.getCenterCamera();
         Eigen::Vector3f distance = camera.getCenter() - v;
+        cout << "center Camera photo ->" << multiTexObj.getCenterCamera().transpose() << endl;
+        cout << "center Camera -> " << camera.getCenter().transpose() << endl;
+        cout << "center Camera -> " << v.transpose() << endl;
         cout << distance.norm() << endl;
 //        for(int i = 0; i < multiTexObj.)
 
