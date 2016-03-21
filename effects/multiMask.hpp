@@ -486,6 +486,7 @@ public:
 
         Eigen::Vector2f viewport = Eigen::Vector2f(renderFBO.getWidth(), renderFBO.getHeight());
 
+        glDisable(GL_DEPTH_TEST);
         showFBO.setUniform("in_Viewport", viewport);
         showFBO.setUniform("imageTexture", renderFBO.bindAttachment(renderBuffer));
 
@@ -493,6 +494,7 @@ public:
 
         showFBO.unbind();
         renderFBO.unbindAttachments();
+        glEnable(GL_DEPTH_TEST);
     }
 
     void render(MultiTextureManagerObj &multiTextObj, const Camera &camera, const Camera &lightTrackball)
@@ -527,13 +529,14 @@ public:
             multiTextObj.changePhotoReferenceTo(0);
             firstRenderFlag = false;
          }
+//        Tucano::Camera cam = camera;
+//        cam.setProjectionMatrix(*(multiTextObj.getProjectionMatrix()));
         renderDistanceMultiPass(multiTextObj, camera, lightTrackball);
     }
 
     void renderMasks(MultiTextureManagerObj &multiTextObj, const Camera &camera, const Camera &lightTrackball)
     {
         //THIS FUNCTION IS USED TO PREPARE AND SEE MASKS WHILE THE PRODUCTION
-
         Mesh &mesh = *multiTextObj.getMesh();
 //        if(firstRenderFlag)
         {
@@ -575,19 +578,64 @@ public:
         {
             fboMPass->create(viewPort_size[0], viewPort_size[1], 2);
         }
-
         fboMPass->clearAttachments();
 
-//        cout << camera.getCenter().transpose() << endl;
-//        cout << multiTexObj.getCenterCamera().transpose() << endl;
-//        Eigen::Vector3f v = multiTexObj.getCenterCamera() * mesh.getScale();
-        Eigen::Vector3f v = mesh.getModelMatrix().inverse() * multiTexObj.getCenterCamera();
-        Eigen::Vector3f distance = camera.getCenter() - v;
-        cout << "center Camera photo ->" << multiTexObj.getCenterCamera().transpose() << endl;
-        cout << "center Camera -> " << camera.getCenter().transpose() << endl;
-        cout << "center Camera -> " << v.transpose() << endl;
-        cout << distance.norm() << endl;
-//        for(int i = 0; i < multiTexObj.)
+        vector <float> angleList;
+        vector <float> distanceList;
+        float maxDist = 0;
+        float minDist = 0;
+        float maxAngle = 0;
+        float minAngle = 0;
+        for(int i = 0; i < multiTexObj.getNumPhotos(); i++)
+        {
+            multiTexObj.changePhotoReferenceTo(i);
+            Eigen::Vector3f currentCameraCenter = mesh.getModelMatrix().inverse() * camera.getCenter();
+            Eigen::Vector3f distanceVector = multiTexObj.getCenterCamera() - currentCameraCenter;
+            Eigen::Vector3f v = Eigen::Vector3f(0, 0, 1);
+
+            Eigen::Vector3f a = camera.getViewMatrix().linear() * v;
+            Eigen::Vector3f b = multiTexObj.getViewMatrix()->linear() * v;
+            float angle     = b.dot(a);
+            float distance  = distanceVector.norm();
+            maxAngle = std::max(maxAngle, angle);
+            minAngle = std::min(minAngle, angle);
+
+            maxDist = std::max(maxDist, distance);
+            minDist = std::min(minDist, distance);
+
+            angleList.push_back(angle);
+            distanceList.push_back(distance);
+        }
+        multiTexObj.changePhotoReferenceTo(0);
+        cout << "";
+        for(int i = 0 ; i < distanceList.size(); i++)
+        {
+            cout << distanceList.at(i) << " ";
+        }
+        cout << endl;
+        vector <float> normDistanceList;
+        for(int i = 0; i < distanceList.size(); i++)
+        {
+            float x = (distanceList.at(i)-minDist)/(maxDist-minDist);
+            x = 1 -x;
+            if(angleList.at(i) < 0.3) x = 0;
+//            cout << i << "- " << x << endl;
+            normDistanceList.push_back(x);
+        }
+
+
+//        cout << "";
+//        for(int i = 0 ; i < distanceList.size(); i++)
+//        {
+//            cout << distanceList.at(i) << " ";
+//        }
+//        cout << endl;
+//        cout << "";
+//        for(int i = 0 ; i < distanceList.size(); i++)
+//        {
+//            cout << angleList.at(i) << " ";
+//        }
+//        cout << endl;
 
         bool multipass = true;
         bool lastpass = false;
@@ -617,7 +665,8 @@ public:
             if(lastpass && resto !=0) texturesPerPass = resto;
 
             fboMPass->clearAttachment(writeBuffer);
-            fboMPass->bindRenderBuffer(writeBuffer);
+            if (!lastpass)
+                fboMPass->bindRenderBuffer(writeBuffer);
                 mPassRender.bind();
 
                     mPassRender.setUniform("projectionMatrix",camera.getProjectionMatrix());
@@ -636,9 +685,10 @@ public:
                     for(int i=0; i<texturesPerPass; i++){
                         string imageTexture = "imageTexture_" + std::to_string(i);
                         string maskTexture = "mask_" + std::to_string(i);
+                        string distWeight = "distWeight_" + std::to_string(i);
                         mPassRender.setUniform(imageTexture.c_str(),  multiTexObj.getBaseTextureAt(i + (counter * (limitPerPass)))->bind());
                         mPassRender.setUniform(maskTexture.c_str(),  maskList.at(i + (counter * (limitPerPass)))->bindAttachment(0));
-
+                        mPassRender.setUniform(distWeight.c_str(), normDistanceList.at(i + (counter * (limitPerPass))));
                     }
 
                     mesh.bindBuffers();
@@ -670,7 +720,7 @@ public:
 
             counter++;
         }
-        renderFbo(*fboMPass, quad, readBuffer);
+        //renderFbo(*fboMPass, quad, readBuffer);
     }
     void renderMultiPass(MultiTextureManagerObj& multiTexObj, const Tucano::Camera& camera, const Tucano::Camera& lightTrackball)
     {

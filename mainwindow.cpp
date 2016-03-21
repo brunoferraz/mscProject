@@ -74,3 +74,9 @@ void MainWindow::on_eyedropper_toggled(bool checked)
 {
     Interface::eyeDropper = checked;
 }
+
+void MainWindow::on_showCameras_clicked(bool checked)
+{
+    Interface::ShowCameras = checked;
+    ui->widget->update();
+}

@@ -39,6 +39,12 @@ uniform sampler2D imageTexture_2;
 uniform sampler2D imageTexture_3;
 uniform sampler2D imageTexture_4;
 
+uniform float distWeight_0;
+uniform float distWeight_1;
+uniform float distWeight_2;
+uniform float distWeight_3;
+uniform float distWeight_4;
+
 uniform sampler2D prevPassTexture;
 
 vec4 sampleColor (in sampler2D texture, vec2 coords)
@@ -62,26 +68,31 @@ void main(void)
         mask = texture2D(mask_0, texCoordsFrag_0);
         nColor.rgb += sampleColor(imageTexture_0, texCoordsFrag_0).rgb * mask.r;
         nColor.a += mask.r;
+        nColor *= distWeight_0;
       }
       if(goodTex_1 == 1){
         mask = texture2D(mask_1, texCoordsFrag_1);
         nColor.rgb += sampleColor(imageTexture_1, texCoordsFrag_1).rgb * mask.r;
         nColor.a += mask.r;
+        nColor *= distWeight_1;
       }
       if(goodTex_2 == 1){
           mask = texture2D(mask_2, texCoordsFrag_2);
           nColor.rgb += sampleColor(imageTexture_2, texCoordsFrag_2).rgb * mask.r;
           nColor.a += mask.r;
+          nColor *= distWeight_2;
       }
       if(goodTex_3 == 1){
           mask = texture2D(mask_3, texCoordsFrag_3);
           nColor.rgb += sampleColor(imageTexture_3, texCoordsFrag_3).rgb * mask.r;
           nColor.a += mask.r;
+          nColor *= distWeight_3;
       }
       if(goodTex_4 == 1){
           mask = texture2D(mask_4, texCoordsFrag_4);
           nColor.rgb += sampleColor(imageTexture_4, texCoordsFrag_4).rgb * mask.r;
           nColor.a += mask.r;
+          nColor *= distWeight_3;
       }
 
 //        prevPassColor.rgb += colorFrag.rgb * colorFrag.a;

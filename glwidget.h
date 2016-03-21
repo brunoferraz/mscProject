@@ -16,6 +16,7 @@
 #include <QDate>
 #include <iostream>
 #include <QDateTime>
+#include <shapes/camerarep.hpp>
 
 class GLWidget : public Tucano::QtTrackballWidget
 {
@@ -32,6 +33,7 @@ public:
     MultiTextureManagerObj mTextManagerObj;
     Tucano::Camera calibrationCamera;
     Tucano::Camera *currentCamera;
+    Tucano::Shapes::CameraRep camRep;
 
     inline void nextCamera(){ mTextManagerObj.nextPhoto();
                               mTextManagerObj.calibrateCamera(calibrationCamera);
@@ -41,9 +43,8 @@ public:
                               mTextManagerObj.calibrateCamera(calibrationCamera);
                               update();
                             }
-
-
 signals:
+
 private:
     Effects::Phong phong;
     Effects::DepthMap depthMap;

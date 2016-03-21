@@ -47,8 +47,9 @@ public:
     void calibrateCamera(Tucano::Camera &c);
 
     void changePhotoReferenceTo(int n);
-    inline void nextPhoto(){changePhotoReferenceTo(1);}
-    inline void prevPhoto(){changePhotoReferenceTo(-1);}
+    void changePhotoReferenceIn(int n);
+    inline void nextPhoto(){changePhotoReferenceIn(1);}
+    inline void prevPhoto(){changePhotoReferenceIn(-1);}
 
 private:
     Eigen::Matrix4f     modelMatrix;

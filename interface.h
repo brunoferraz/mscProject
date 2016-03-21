@@ -11,6 +11,7 @@ public:
     enum CAMERA_TYPES{FREE, CALIBRATED};
     static int camera;
     static bool showBackgroundImage;
+    static bool ShowCameras;
     static bool eyeDropper;
     static float alphaBackgroundImage;
     static QTextBrowser* infoBox;

@@ -28,7 +28,7 @@
     <property name="geometry">
      <rect>
       <x>800</x>
-      <y>20</y>
+      <y>80</y>
       <width>161</width>
       <height>22</height>
      </rect>
@@ -44,7 +44,7 @@
     <property name="geometry">
      <rect>
       <x>800</x>
-      <y>50</y>
+      <y>110</y>
       <width>141</width>
       <height>29</height>
      </rect>
@@ -63,7 +63,7 @@
     <property name="geometry">
      <rect>
       <x>790</x>
-      <y>100</y>
+      <y>160</y>
       <width>161</width>
       <height>27</height>
      </rect>
@@ -89,7 +89,7 @@
     <property name="geometry">
      <rect>
       <x>790</x>
-      <y>140</y>
+      <y>200</y>
       <width>161</width>
       <height>26</height>
      </rect>
@@ -105,7 +105,7 @@
     <property name="geometry">
      <rect>
       <x>790</x>
-      <y>130</y>
+      <y>190</y>
       <width>161</width>
       <height>10</height>
      </rect>
@@ -118,7 +118,7 @@
     <property name="geometry">
      <rect>
       <x>790</x>
-      <y>170</y>
+      <y>230</y>
       <width>161</width>
       <height>130</height>
      </rect>
@@ -128,9 +128,38 @@
     <property name="geometry">
      <rect>
       <x>790</x>
-      <y>90</y>
-      <width>170</width>
-      <height>10</height>
+      <y>140</y>
+      <width>161</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Horizontal</enum>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="showCameras">
+    <property name="geometry">
+     <rect>
+      <x>800</x>
+      <y>30</y>
+      <width>161</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>show Cameras</string>
+    </property>
+    <property name="checked">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="Line" name="line_3">
+    <property name="geometry">
+     <rect>
+      <x>790</x>
+      <y>60</y>
+      <width>161</width>
+      <height>20</height>
      </rect>
     </property>
     <property name="orientation">

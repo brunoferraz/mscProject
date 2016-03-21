@@ -120,6 +120,14 @@ Eigen::Vector3f MultiTextureManagerObj::getCenterCamera()
 
 void MultiTextureManagerObj::changePhotoReferenceTo(int n)
 {
+    int next = n;
+    if(next >= rasterGroup.count()) next = 0;
+    if(next < 0) next = rasterGroup.count()-1;
+    currentPhotoIndex = next;
+}
+
+void MultiTextureManagerObj::changePhotoReferenceIn(int n)
+{
     int next = currentPhotoIndex + n;
     if(next >= rasterGroup.count()) next = 0;
     if(next < 0) next = rasterGroup.count()-1;
