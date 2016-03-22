@@ -68,31 +68,36 @@ void main(void)
         mask = texture2D(mask_0, texCoordsFrag_0);
         nColor.rgb += sampleColor(imageTexture_0, texCoordsFrag_0).rgb * mask.r;
         nColor.a += mask.r;
-        nColor *= distWeight_0;
+        nColor.rgb += nColor.rgb *  distWeight_0;
+        nColor.a += distWeight_0;
       }
       if(goodTex_1 == 1){
         mask = texture2D(mask_1, texCoordsFrag_1);
         nColor.rgb += sampleColor(imageTexture_1, texCoordsFrag_1).rgb * mask.r;
         nColor.a += mask.r;
-        nColor *= distWeight_1;
+        nColor.rgb += nColor.rgb *  distWeight_1;
+        nColor.a += distWeight_1;
       }
       if(goodTex_2 == 1){
           mask = texture2D(mask_2, texCoordsFrag_2);
           nColor.rgb += sampleColor(imageTexture_2, texCoordsFrag_2).rgb * mask.r;
           nColor.a += mask.r;
-          nColor *= distWeight_2;
+          nColor.rgb += nColor.rgb *  distWeight_2;
+          nColor.a += distWeight_2;
       }
       if(goodTex_3 == 1){
           mask = texture2D(mask_3, texCoordsFrag_3);
           nColor.rgb += sampleColor(imageTexture_3, texCoordsFrag_3).rgb * mask.r;
           nColor.a += mask.r;
-          nColor *= distWeight_3;
+          nColor.rgb += nColor.rgb *  distWeight_3;
+          nColor.a += distWeight_3;
       }
       if(goodTex_4 == 1){
           mask = texture2D(mask_4, texCoordsFrag_4);
           nColor.rgb += sampleColor(imageTexture_4, texCoordsFrag_4).rgb * mask.r;
           nColor.a += mask.r;
-          nColor *= distWeight_3;
+          nColor.rgb += nColor.rgb *  distWeight_4;
+          nColor.a += distWeight_4;
       }
 
 //        prevPassColor.rgb += colorFrag.rgb * colorFrag.a;

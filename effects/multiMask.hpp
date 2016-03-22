@@ -529,8 +529,8 @@ public:
             multiTextObj.changePhotoReferenceTo(0);
             firstRenderFlag = false;
          }
-//        Tucano::Camera cam = camera;
-//        cam.setProjectionMatrix(*(multiTextObj.getProjectionMatrix()));
+        Tucano::Camera cam = camera;
+        cam.setProjectionMatrix(*(multiTextObj.getProjectionMatrix()));
         renderDistanceMultiPass(multiTextObj, camera, lightTrackball);
     }
 
@@ -595,7 +595,7 @@ public:
 
             Eigen::Vector3f a = camera.getViewMatrix().linear() * v;
             Eigen::Vector3f b = multiTexObj.getViewMatrix()->linear() * v;
-            float angle     = b.dot(a);
+            float angle     = a.dot(b);
             float distance  = distanceVector.norm();
             maxAngle = std::max(maxAngle, angle);
             minAngle = std::min(minAngle, angle);
@@ -607,23 +607,20 @@ public:
             distanceList.push_back(distance);
         }
         multiTexObj.changePhotoReferenceTo(0);
-        cout << "";
-        for(int i = 0 ; i < distanceList.size(); i++)
-        {
-            cout << distanceList.at(i) << " ";
-        }
-        cout << endl;
+//        cout << "";
+//        for(int i = 0 ; i < distanceList.size(); i++)
+//        {
+//            cout << distanceList.at(i) << " ";
+//        }
+//        cout << endl;
         vector <float> normDistanceList;
         for(int i = 0; i < distanceList.size(); i++)
         {
             float x = (distanceList.at(i)-minDist)/(maxDist-minDist);
             x = 1 -x;
-            if(angleList.at(i) < 0.3) x = 0;
-//            cout << i << "- " << x << endl;
+            if(angleList.at(i) < 0.5) x = 0;
             normDistanceList.push_back(x);
         }
-
-
 //        cout << "";
 //        for(int i = 0 ; i < distanceList.size(); i++)
 //        {
@@ -720,7 +717,7 @@ public:
 
             counter++;
         }
-        //renderFbo(*fboMPass, quad, readBuffer);
+//        renderFbo(*fboMPass, quad, readBuffer);
     }
     void renderMultiPass(MultiTextureManagerObj& multiTexObj, const Tucano::Camera& camera, const Tucano::Camera& lightTrackball)
     {
