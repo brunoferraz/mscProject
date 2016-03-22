@@ -529,9 +529,9 @@ public:
             multiTextObj.changePhotoReferenceTo(0);
             firstRenderFlag = false;
          }
-        Tucano::Camera cam = camera;
-        cam.setProjectionMatrix(*(multiTextObj.getProjectionMatrix()));
-        renderDistanceMultiPass(multiTextObj, cam, lightTrackball);
+//        Tucano::Camera cam = camera;
+//        cam.setProjectionMatrix(*(multiTextObj.getProjectionMatrix()));
+        renderDistanceMultiPass(multiTextObj, camera, lightTrackball);
     }
 
     void renderMasks(MultiTextureManagerObj &multiTextObj, const Camera &camera, const Camera &lightTrackball)
@@ -615,11 +615,11 @@ public:
         {
             float x = (distanceList.at(i)-minDist)/(maxDist-minDist);
             x = 1 -x;
-            if(angleList.at(i) < 0.0) x = 0;
+            if(angleList.at(i) < 0.0 && angleList.at(i) > -0.5) x = 0;
             normDistanceList.push_back(x);
 
             float y = (angleList.at(i)-minAngle)/(maxAngle - minAngle);
-            if(angleList.at(i) < 0.0) y = 0;
+            if(angleList.at(i) < 0.0 && angleList.at(i) > -0.5) y = 0;
             normAngleList.push_back(y);
         }
         maxDist = 0;
@@ -632,7 +632,7 @@ public:
         for(int i = 0; i < distanceList.size(); i++)
         {
             float x = (normDistanceList.at(i)-minDist)/(maxDist-minDist);
-            normDistanceList.at(i) = x;
+            normDistanceList.at(i) = x +1;
         }
 
         cout << "NORMALIZED DISTANCE >> ";
@@ -711,9 +711,11 @@ public:
                         string imageTexture = "imageTexture_" + std::to_string(i);
                         string maskTexture = "mask_" + std::to_string(i);
                         string distWeight = "distWeight_" + std::to_string(i);
+                        string angleWeight = "angleWeight_" + std::to_string(i);
                         mPassRender.setUniform(imageTexture.c_str(),  multiTexObj.getBaseTextureAt(i + (counter * (limitPerPass)))->bind());
                         mPassRender.setUniform(maskTexture.c_str(),  maskList.at(i + (counter * (limitPerPass)))->bindAttachment(0));
                         mPassRender.setUniform(distWeight.c_str(), normDistanceList.at(i + (counter * (limitPerPass))));
+                        mPassRender.setUniform(angleWeight.c_str(), normAngleList.at(i + (counter * (limitPerPass))));
                     }
 
                     mesh.bindBuffers();
