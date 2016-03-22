@@ -628,11 +628,15 @@ public:
         {
             maxDist = std::max(maxDist, normDistanceList.at(i));
             minDist = std::min(minDist, normDistanceList.at(i));
+            maxAngle = std::max(maxAngle, normAngleList.at(i));
+            minAngle = std::min(minAngle, normAngleList.at(i));
         }
         for(int i = 0; i < distanceList.size(); i++)
         {
             float x = (normDistanceList.at(i)-minDist)/(maxDist-minDist);
             normDistanceList.at(i) = x +1;
+            float y = (normAngleList.at(i)-minAngle)/(maxAngle-minAngle);
+            normAngleList.at(i) = y;
         }
 
         cout << "NORMALIZED DISTANCE >> ";
