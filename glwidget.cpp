@@ -66,7 +66,7 @@ void GLWidget::paintGL()
 
     if(Interface::camera == Interface::CAMERA_TYPES::FREE)
     {
-        camera.render();
+//        camera.render();
         if(Interface::ShowCameras){
             for(int i =0 ; i < mTextManagerObj.getNumPhotos(); i++)
             {

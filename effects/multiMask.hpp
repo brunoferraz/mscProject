@@ -531,7 +531,7 @@ public:
          }
         Tucano::Camera cam = camera;
         cam.setProjectionMatrix(*(multiTextObj.getProjectionMatrix()));
-        renderDistanceMultiPass(multiTextObj, camera, lightTrackball);
+        renderDistanceMultiPass(multiTextObj, cam, lightTrackball);
     }
 
     void renderMasks(MultiTextureManagerObj &multiTextObj, const Camera &camera, const Camera &lightTrackball)
@@ -582,10 +582,10 @@ public:
 
         vector <float> angleList;
         vector <float> distanceList;
-        float maxDist = 0;
-        float minDist = 0;
-        float maxAngle = 0;
-        float minAngle = 0;
+        float maxDist   = 0;
+        float minDist   = 0;
+        float maxAngle  = 0;
+        float minAngle  = 0;
         for(int i = 0; i < multiTexObj.getNumPhotos(); i++)
         {
             multiTexObj.changePhotoReferenceTo(i);
@@ -607,32 +607,60 @@ public:
             distanceList.push_back(distance);
         }
         multiTexObj.changePhotoReferenceTo(0);
-//        cout << "";
-//        for(int i = 0 ; i < distanceList.size(); i++)
-//        {
-//            cout << distanceList.at(i) << " ";
-//        }
-//        cout << endl;
+
+
         vector <float> normDistanceList;
+        vector <float> normAngleList;
         for(int i = 0; i < distanceList.size(); i++)
         {
             float x = (distanceList.at(i)-minDist)/(maxDist-minDist);
             x = 1 -x;
-            if(angleList.at(i) < 0.5) x = 0;
+            if(angleList.at(i) < 0.0) x = 0;
             normDistanceList.push_back(x);
+
+            float y = (angleList.at(i)-minAngle)/(maxAngle - minAngle);
+            if(angleList.at(i) < 0.0) y = 0;
+            normAngleList.push_back(y);
         }
-//        cout << "";
-//        for(int i = 0 ; i < distanceList.size(); i++)
-//        {
-//            cout << distanceList.at(i) << " ";
-//        }
-//        cout << endl;
-//        cout << "";
-//        for(int i = 0 ; i < distanceList.size(); i++)
-//        {
-//            cout << angleList.at(i) << " ";
-//        }
-//        cout << endl;
+        maxDist = 0;
+        minDist = 0;
+        for(int i = 0 ; i < distanceList.size(); i++)
+        {
+            maxDist = std::max(maxDist, normDistanceList.at(i));
+            minDist = std::min(minDist, normDistanceList.at(i));
+        }
+        for(int i = 0; i < distanceList.size(); i++)
+        {
+            float x = (normDistanceList.at(i)-minDist)/(maxDist-minDist);
+            normDistanceList.at(i) = x;
+        }
+
+        cout << "NORMALIZED DISTANCE >> ";
+        for(int i = 0 ; i < distanceList.size(); i++)
+        {
+            cout << normDistanceList.at(i) << " ";
+        }
+        cout << endl;
+        cout << "DISTANCE >> ";
+        for(int i = 0 ; i < distanceList.size(); i++)
+        {
+            cout << distanceList.at(i) << " ";
+        }
+        cout << endl;
+
+        cout << "ANGLE >> ";
+        for(int i = 0 ; i < distanceList.size(); i++)
+        {
+            cout << angleList.at(i) << " ";
+        }
+        cout << endl;
+
+        cout << "NORMALIZED ANGLE >> ";
+        for(int i = 0 ; i < distanceList.size(); i++)
+        {
+            cout << normAngleList.at(i) << " ";
+        }
+        cout << endl;
 
         bool multipass = true;
         bool lastpass = false;
