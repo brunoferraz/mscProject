@@ -48,8 +48,10 @@ public:
 
     void changePhotoReferenceTo(int n);
     void changePhotoReferenceIn(int n);
-    inline void nextPhoto(){changePhotoReferenceIn(1);}
-    inline void prevPhoto(){changePhotoReferenceIn(-1);}
+//    inline void nextPhoto(){changePhotoReferenceIn(1);}
+//    inline void prevPhoto(){changePhotoReferenceIn(-1);}
+    inline void nextPhoto(){changePhotoReferenceTo(currentPhotoIndex + 1);}
+    inline void prevPhoto(){changePhotoReferenceTo(currentPhotoIndex -1);}
 
 private:
     Eigen::Matrix4f     modelMatrix;

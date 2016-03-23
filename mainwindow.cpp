@@ -80,3 +80,9 @@ void MainWindow::on_showCameras_clicked(bool checked)
     Interface::ShowCameras = checked;
     ui->widget->update();
 }
+
+void MainWindow::on_useWeights_clicked(bool checked)
+{
+    Interface::useWeights = checked;
+    ui->widget->update();
+}

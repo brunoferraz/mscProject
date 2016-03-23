@@ -27,6 +27,7 @@ private slots:
     void on_saveImage_released();
     void on_eyedropper_toggled(bool checked);
     void on_showCameras_clicked(bool checked);
+    void on_useWeights_clicked(bool checked);
 };
 
 #endif // MAINWINDOW_H

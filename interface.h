@@ -13,6 +13,7 @@ public:
     static bool showBackgroundImage;
     static bool ShowCameras;
     static bool eyeDropper;
+    static bool useWeights;
     static float alphaBackgroundImage;
     static QTextBrowser* infoBox;
 };

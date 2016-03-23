@@ -54,6 +54,7 @@ private:
     Shader jumpFlood;
     Shader multiTF;
     Shader mPassRender;
+    Shader mPassRenderWeight;
 
     Shader showFBO;
 
@@ -89,6 +90,7 @@ private:
 
 
 public:
+    bool useWeights;
     bool firstRenderFlag;
     /**
      * @brief Default constructor.
@@ -109,6 +111,8 @@ public:
 
         writeBuffer = 0;
         readBuffer = 1;
+
+        useWeights = true;
     }
 
     /**
@@ -136,6 +140,7 @@ public:
         loadShader(depthMap,        "depthmap");
         loadShader(phong_shader,    "phongshader");
         loadShader(mPassRender,     "multipass");
+        loadShader(mPassRenderWeight,"multipassWeight");
         loadShader(showFBO,         "showFbo");
         loadShader(maskPass,        "maskpass");
         loadShader(maskFusePass,    "maskfusepass");
@@ -334,7 +339,7 @@ public:
 
         if(fboMaskBorder->getWidth() != viewport_size[0] || fboMaskBorder->getHeight() != viewport_size[1])
         {
-            fboMaskBorder->create(viewport_size[0], viewport_size[1], 1);
+            fboMaskBorder->create(viewport_size[0], viewport_size[1], 2);
         }
 
         fboMaskBorder->clearAttachments();
@@ -356,22 +361,22 @@ public:
         fboMaskBorder->unbind();
         fboMaskBorder->clearDepth();
 
-        //JUMP FLOOD
-        Framebuffer *fboJumpFlood = new Framebuffer();
-        if(fboJumpFlood->getWidth() != viewport_size[0] || fboJumpFlood->getHeight() != viewport_size[1])
-        {
-            fboJumpFlood->create(viewport_size[0], viewport_size[1], 1);
-        }
 
-        fboJumpFlood->clearAttachments();
-        fboJumpFlood->bindRenderBuffer(0);
+        ////////////////////////////////////////////////
+        //JUMP FLOOD
+        GLuint readJump = 0;
+        GLuint writeJump = 1;
+
+        fboMaskBorder->clearAttachment(writeJump);
+        fboMaskBorder->bindRenderBuffer(writeJump);
 
             jumpFlood.bind();
             jumpFlood.setUniform("projectionMatrix", camera.getProjectionMatrix());
             jumpFlood.setUniform("modelMatrix", mesh.getModelMatrix());
             jumpFlood.setUniform("viewMatrix", camera.getViewMatrix());
-            jumpFlood.setUniform("sobelMap", fboMaskBorder->bindAttachment(0));
+            jumpFlood.setUniform("sobelMap", fboMaskBorder->bindAttachment(readJump));
             jumpFlood.setUniform("viewportSize",  Eigen::Vector2f(774.0, 518.0));
+            jumpFlood.setUniform("lengthStep",  2);
 
             mesh.setAttributeLocation(jumpFlood);
 
@@ -379,10 +384,13 @@ public:
             mesh.render();
             jumpFlood.unbind();
 
-        fboJumpFlood->unbind();
-        fboJumpFlood->clearDepth();
+        fboMaskBorder->unbind();
+        fboMaskBorder->clearDepth();
 
-        renderFbo(*fboJumpFlood, quad);
+        GLuint temp = readJump;
+        readJump = writeJump;
+        writeJump = temp;
+        renderFbo(*fboMaskBorder, quad, readJump);
     }
     void fuseMasks(Tucano::Mesh& mesh, const Tucano::Camera& camera, const Tucano::Camera& lightTrackball)
     {
@@ -499,8 +507,8 @@ public:
 
     void render(MultiTextureManagerObj &multiTextObj, const Camera &camera, const Camera &lightTrackball)
     {
-//        renderMasks(multiTextObj, camera, lightTrackball);
-        renderDistance(multiTextObj, camera, lightTrackball);
+        renderMasks(multiTextObj, camera, lightTrackball);
+//        renderDistance(multiTextObj, camera, lightTrackball);
 
     }
     void renderDistance(MultiTextureManagerObj &multiTextObj, const Camera &camera, const Camera &lightTrackball)
@@ -526,19 +534,24 @@ public:
                 updateTF(multiTextObj, cam, lightTrackball);
                 multiTextObj.nextPhoto();
             }
-            multiTextObj.changePhotoReferenceTo(0);
+//            multiTextObj.changePhotoReferenceTo(0);
             firstRenderFlag = false;
          }
 //        Tucano::Camera cam = camera;
 //        cam.setProjectionMatrix(*(multiTextObj.getProjectionMatrix()));
-        renderDistanceMultiPass(multiTextObj, camera, lightTrackball);
+
+        if(useWeights){
+            renderDistanceMultiPass(multiTextObj, camera, lightTrackball);
+        }else{
+            renderMultiPass(multiTextObj, camera, lightTrackball);
+        }
     }
 
     void renderMasks(MultiTextureManagerObj &multiTextObj, const Camera &camera, const Camera &lightTrackball)
     {
         //THIS FUNCTION IS USED TO PREPARE AND SEE MASKS WHILE THE PRODUCTION
         Mesh &mesh = *multiTextObj.getMesh();
-//        if(firstRenderFlag)
+//      if(firstRenderFlag)
         {
             Tucano::Camera cam;
             cam.setViewport(camera.getViewport());
@@ -585,9 +598,10 @@ public:
         float minDist   = 0;
         float maxAngle  = 0;
         float minAngle  = 0;
+        multiTexObj.changePhotoReferenceTo(0);
         for(int i = 0; i < multiTexObj.getNumPhotos(); i++)
         {
-            multiTexObj.changePhotoReferenceTo(i);
+//            multiTexObj.changePhotoReferenceTo(i);
             Eigen::Vector3f currentCameraCenter = mesh.getModelMatrix().inverse() * camera.getCenter();
             Eigen::Vector3f distanceVector = multiTexObj.getCenterCamera() - currentCameraCenter;
             Eigen::Vector3f v = Eigen::Vector3f(0, 0, 1);
@@ -604,8 +618,9 @@ public:
 
             angleList.push_back(angle);
             distanceList.push_back(distance);
+            multiTexObj.nextPhoto();
         }
-        multiTexObj.changePhotoReferenceTo(0);
+//        multiTexObj.changePhotoReferenceTo(0);
 
 
         vector <float> normDistanceList;
@@ -614,11 +629,11 @@ public:
         {
             float x = (distanceList.at(i)-minDist)/(maxDist-minDist);
             x = 1 -x;
-            if(angleList.at(i) < 0.0 && angleList.at(i) > -0.5) x = 0;
+            if(angleList.at(i) < 0.0 && angleList.at(i) > -0.2) x = 0;
             normDistanceList.push_back(x);
 
             float y = (angleList.at(i)-minAngle)/(maxAngle - minAngle);
-            if(angleList.at(i) < 0.0 && angleList.at(i) > -0.5) y = 0;
+            if(angleList.at(i) < 0.0 && angleList.at(i) > -0.2) y = 0;
             normAngleList.push_back(y);
         }
         maxDist = 0;
@@ -680,7 +695,6 @@ public:
             counter++;
         }
 
-
         loops = counter;
         counter = 0;
         while(counter < loops)
@@ -695,41 +709,41 @@ public:
             fboMPass->clearAttachment(writeBuffer);
             if (!lastpass)
                 fboMPass->bindRenderBuffer(writeBuffer);
-                mPassRender.bind();
+                mPassRenderWeight.bind();
 
-                    mPassRender.setUniform("projectionMatrix",camera.getProjectionMatrix());
-                    mPassRender.setUniform("modelMatrix",     mesh.getModelMatrix());
-                    mPassRender.setUniform("viewMatrix",      camera.getViewMatrix());
-                    mPassRender.setUniform("lightViewMatrix", lightTrackball.getViewMatrix());
-                    mPassRender.setUniform("firstPass",       true);
-                    mPassRender.setUniform("lastPass",        lastpass);
-                    mPassRender.setUniform("multiPass",       multipass);
-                    mPassRender.setUniform("numImages",       texturesPerPass);
+                    mPassRenderWeight.setUniform("projectionMatrix",camera.getProjectionMatrix());
+                    mPassRenderWeight.setUniform("modelMatrix",     mesh.getModelMatrix());
+                    mPassRenderWeight.setUniform("viewMatrix",      camera.getViewMatrix());
+                    mPassRenderWeight.setUniform("lightViewMatrix", lightTrackball.getViewMatrix());
+                    mPassRenderWeight.setUniform("firstPass",       true);
+                    mPassRenderWeight.setUniform("lastPass",        lastpass);
+                    mPassRenderWeight.setUniform("multiPass",       multipass);
+                    mPassRenderWeight.setUniform("numImages",       texturesPerPass);
 
-                    mPassRender.setUniform("viewportSize",    Eigen::Vector2f(viewPort_size[0], viewPort_size[1]));
+                    mPassRenderWeight.setUniform("viewportSize",    Eigen::Vector2f(viewPort_size[0], viewPort_size[1]));
 
-                    mPassRender.setUniform("prevPassTexture", fboMPass->bindAttachment(readBuffer));
+                    mPassRenderWeight.setUniform("prevPassTexture", fboMPass->bindAttachment(readBuffer));
 
                     for(int i=0; i<texturesPerPass; i++){
                         string imageTexture = "imageTexture_" + std::to_string(i);
                         string maskTexture = "mask_" + std::to_string(i);
                         string distWeight = "distWeight_" + std::to_string(i);
                         string angleWeight = "angleWeight_" + std::to_string(i);
-                        mPassRender.setUniform(imageTexture.c_str(),  multiTexObj.getBaseTextureAt(i + (counter * (limitPerPass)))->bind());
-                        mPassRender.setUniform(maskTexture.c_str(),  maskList.at(i + (counter * (limitPerPass)))->bindAttachment(0));
-                        mPassRender.setUniform(distWeight.c_str(), normDistanceList.at(i + (counter * (limitPerPass))));
-                        mPassRender.setUniform(angleWeight.c_str(), normAngleList.at(i + (counter * (limitPerPass))));
+                        mPassRenderWeight.setUniform(imageTexture.c_str(),  multiTexObj.getBaseTextureAt(i + (counter * (limitPerPass)))->bind());
+                        mPassRenderWeight.setUniform(maskTexture.c_str(),  maskList.at(i + (counter * (limitPerPass)))->bindAttachment(0));
+                        mPassRenderWeight.setUniform(distWeight.c_str(), normDistanceList.at(i + (counter * (limitPerPass))));
+                        mPassRenderWeight.setUniform(angleWeight.c_str(), normAngleList.at(i + (counter * (limitPerPass))));
                     }
 
                     mesh.bindBuffers();
 
-                    mesh.getAttribute("in_Position")->enable(mPassRender.getAttributeLocation("in_Position"));
-                    mesh.getAttribute("in_Normal")->enable(mPassRender.getAttributeLocation("in_Normal"));
+                    mesh.getAttribute("in_Position")->enable(mPassRenderWeight.getAttributeLocation("in_Position"));
+                    mesh.getAttribute("in_Normal")->enable(mPassRenderWeight.getAttributeLocation("in_Normal"));
 
                     for(int i=0; i< texturesPerPass; i++){
                         string imageID = "imageID_" + std::to_string(i + (counter * (limitPerPass)));
                         string in_coordText = "in_coordText_" + std::to_string(i);
-                        mesh.getAttribute(imageID.c_str())->enable(mPassRender.getAttributeLocation(in_coordText.c_str()));
+                        mesh.getAttribute(imageID.c_str())->enable(mPassRenderWeight.getAttributeLocation(in_coordText.c_str()));
                     }
 
                     mesh.renderElements();
@@ -740,7 +754,7 @@ public:
                         multiTexObj.getBaseTextureAt(i)->unbind();
                         maskList.at(i)->unbind();
                     }
-                mPassRender.unbind();
+                mPassRenderWeight.unbind();
             fboMPass->unbind();
 
             //SWAP
@@ -782,8 +796,6 @@ public:
         if(resto>0){
             counter++;
         }
-
-
 //        cout <<"Total number of textures.." << totalTextures << endl;
 //        cout <<"Texture limit per pass...." << limitPerPass << endl;
 //        cout <<"Number of loops..........." << loops << endl;
@@ -804,7 +816,8 @@ public:
             if(lastpass && resto !=0) texturesPerPass = resto;
 
             fboMPass->clearAttachment(writeBuffer);
-            fboMPass->bindRenderBuffer(writeBuffer);
+            if (!lastpass)
+                fboMPass->bindRenderBuffer(writeBuffer);
                 mPassRender.bind();
 
                     mPassRender.setUniform("projectionMatrix",camera.getProjectionMatrix());
@@ -859,7 +872,7 @@ public:
 
             counter++;
         }
-        renderFbo(*fboMPass, quad, readBuffer);
+//        renderFbo(*fboMPass, quad, readBuffer);
     }
 
     Eigen::Vector4f getColorAt(Eigen::Vector2i v){
@@ -867,7 +880,7 @@ public:
     }
     void saveImage(string &pathAndName){
         currentFBO->saveAsPPM(pathAndName, currentBuffer);
-    };
+    }
 };
 
 }

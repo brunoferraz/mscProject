@@ -82,6 +82,9 @@ OTHER_FILES += ./effects/shaders/rendertexture.vert \
                ./effects/shaders/multipass.vert \
                ./effects/shaders/multipass.frag \
                ./effects/shaders/multipass.geom \
+               ./effects/shaders/multipassWeight.vert \
+               ./effects/shaders/multipassWeight.frag \
+               ./effects/shaders/multipassWeight.geom \
                ./effects/shaders/simplepass.vert \
                ./effects/shaders/simplepass.geom \
                ./effects/shaders/simplepass.frag \

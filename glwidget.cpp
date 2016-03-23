@@ -61,6 +61,7 @@ void GLWidget::paintGL()
 //    phong.render(*mTextManagerObj.getMesh(), *currentCamera, light_trackball);
 
 //      multi.render(mTextManagerObj, *currentCamera, light_trackball);
+      multiMask.useWeights = Interface::useWeights;
       multiMask.render(mTextManagerObj, *currentCamera, light_trackball);
 //    depthMap.render(*mTextManagerObj.getMesh(), calibrationCamera, light_trackball);
 
