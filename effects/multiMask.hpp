@@ -562,8 +562,7 @@ public:
             multiTextObj.changePhotoReferenceTo(0);
             firstRenderFlag = false;
          }
-
-//        renderMultiPass(multiTextObj, camera, lightTrackball);
+//       renderMultiPass(multiTextObj, camera, lightTrackball);
     }
     void renderDistanceMultiPass(MultiTextureManagerObj& multiTexObj, const Tucano::Camera& camera, const Tucano::Camera& lightTrackball)
     {
@@ -639,32 +638,32 @@ public:
             normAngleList.at(i) = y;
         }
 
-        cout << "NORMALIZED DISTANCE >> ";
-        for(int i = 0 ; i < distanceList.size(); i++)
-        {
-            cout << normDistanceList.at(i) << " ";
-        }
-        cout << endl;
-        cout << "DISTANCE >> ";
-        for(int i = 0 ; i < distanceList.size(); i++)
-        {
-            cout << distanceList.at(i) << " ";
-        }
-        cout << endl;
+//        cout << "NORMALIZED DISTANCE >> ";
+//        for(int i = 0 ; i < distanceList.size(); i++)
+//        {
+//            cout << normDistanceList.at(i) << " ";
+//        }
+//        cout << endl;
+//        cout << "DISTANCE >> ";
+//        for(int i = 0 ; i < distanceList.size(); i++)
+//        {
+//            cout << distanceList.at(i) << " ";
+//        }
+//        cout << endl;
 
-        cout << "ANGLE >> ";
-        for(int i = 0 ; i < distanceList.size(); i++)
-        {
-            cout << angleList.at(i) << " ";
-        }
-        cout << endl;
+//        cout << "ANGLE >> ";
+//        for(int i = 0 ; i < distanceList.size(); i++)
+//        {
+//            cout << angleList.at(i) << " ";
+//        }
+//        cout << endl;
 
-        cout << "NORMALIZED ANGLE >> ";
-        for(int i = 0 ; i < distanceList.size(); i++)
-        {
-            cout << normAngleList.at(i) << " ";
-        }
-        cout << endl;
+//        cout << "NORMALIZED ANGLE >> ";
+//        for(int i = 0 ; i < distanceList.size(); i++)
+//        {
+//            cout << normAngleList.at(i) << " ";
+//        }
+//        cout << endl;
 
         bool multipass = true;
         bool lastpass = false;
