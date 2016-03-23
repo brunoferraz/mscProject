@@ -339,7 +339,7 @@ public:
 
         if(fboMaskBorder->getWidth() != viewport_size[0] || fboMaskBorder->getHeight() != viewport_size[1])
         {
-            fboMaskBorder->create(viewport_size[0], viewport_size[1], 2);
+            fboMaskBorder->create(viewport_size[0], viewport_size[1], 1);
         }
 
         fboMaskBorder->clearAttachments();
@@ -364,33 +364,59 @@ public:
 
         ////////////////////////////////////////////////
         //JUMP FLOOD
+        Framebuffer *fboJumpFlood = new Framebuffer();
+        if(fboJumpFlood->getWidth() != viewport_size[0] || fboJumpFlood->getHeight() != viewport_size[1])
+        {
+            fboJumpFlood->create(viewport_size[0], viewport_size[1], 2);
+        }
+
         GLuint readJump = 0;
         GLuint writeJump = 1;
+        bool firstPass = true;
+        bool lastPass = false;
+        int counter = 0;
+        float lengthStep = 1;
+        int totalLoops = 3;
 
-        fboMaskBorder->clearAttachment(writeJump);
-        fboMaskBorder->bindRenderBuffer(writeJump);
+        while(counter <totalLoops)
+        {
+            fboJumpFlood->clearAttachment(writeJump);
+            fboJumpFlood->bindRenderBuffer(writeJump);
 
-            jumpFlood.bind();
-            jumpFlood.setUniform("projectionMatrix", camera.getProjectionMatrix());
-            jumpFlood.setUniform("modelMatrix", mesh.getModelMatrix());
-            jumpFlood.setUniform("viewMatrix", camera.getViewMatrix());
-            jumpFlood.setUniform("sobelMap", fboMaskBorder->bindAttachment(readJump));
-            jumpFlood.setUniform("viewportSize",  Eigen::Vector2f(774.0, 518.0));
-            jumpFlood.setUniform("lengthStep",  2);
+                jumpFlood.bind();
+                jumpFlood.setUniform("projectionMatrix", camera.getProjectionMatrix());
+                jumpFlood.setUniform("modelMatrix", mesh.getModelMatrix());
+                jumpFlood.setUniform("viewMatrix", camera.getViewMatrix());
+                jumpFlood.setUniform("viewportSize",  Eigen::Vector2f(774.0, 518.0));
+                jumpFlood.setUniform("lengthStep",  lengthStep);
+                jumpFlood.setUniform("firstPass", firstPass);
+                jumpFlood.setUniform("lastPass", lastPass);
 
-            mesh.setAttributeLocation(jumpFlood);
+                if(firstPass){
+                    jumpFlood.setUniform("map", fboMaskBorder->bindAttachment(readJump));
+                }else{
+                    jumpFlood.setUniform("map", fboJumpFlood->bindAttachment(readJump));
+                }
+                mesh.setAttributeLocation(jumpFlood);
 
-            glEnable(GL_DEPTH_TEST);
-            mesh.render();
-            jumpFlood.unbind();
+                glEnable(GL_DEPTH_TEST);
+                mesh.render();
+                jumpFlood.unbind();
 
-        fboMaskBorder->unbind();
-        fboMaskBorder->clearDepth();
+            fboJumpFlood->unbind();
+            fboJumpFlood->clearDepth();
 
-        GLuint temp = readJump;
-        readJump = writeJump;
-        writeJump = temp;
-        renderFbo(*fboMaskBorder, quad, readJump);
+            GLuint temp = readJump;
+            readJump = writeJump;
+            writeJump = temp;
+
+            lengthStep *= 2;
+            counter++;
+            firstPass  = false;
+            if(counter == (totalLoops -2))
+                lastPass = true;
+        }
+        renderFbo(*fboJumpFlood, quad, readJump);
     }
     void fuseMasks(Tucano::Mesh& mesh, const Tucano::Camera& camera, const Tucano::Camera& lightTrackball)
     {

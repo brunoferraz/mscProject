@@ -6,9 +6,12 @@ in vec3 normal;
 in vec4 vert;
 
 uniform vec2 viewportSize;
-uniform sampler2D sobelMap;
+uniform sampler2D map;
+
 
 uniform float lengthStep;
+uniform bool lastPass;
+uniform bool firstPass;
 
 float threshold = 0.0020;
 
@@ -18,34 +21,56 @@ void main(void)
 
 //    float stepX = (50 * 1)/viewportSize.x;
 //    float stepY = (50 * 1)/viewportSize.y;
-    float stepX = viewportSize.x / lengthStep;
-    float stepY = viewportSize.y / lengthStep;
+    vec2 a = vec2(viewportSize.x / lengthStep, viewportSize.y / lengthStep);
 
-    float c1 = texture2D(sobelMap, vec2(coord.x-stepX, coord.y-stepY)).x;
-    float c2 = texture2D(sobelMap, vec2(coord.x, coord.y -stepY)).x;
-    float c3 = texture2D(sobelMap, vec2(coord.x+stepX, coord.y -stepY)).x;
-    float c4 = texture2D(sobelMap, vec2(coord.x-stepX, coord.y)).x;
-    float c5 = texture2D(sobelMap, vec2(coord.x, coord.y)).x;
-    float c6 = texture2D(sobelMap, vec2(coord.x + stepX, coord.y)).x;
-    float c7 = texture2D(sobelMap, vec2(coord.x - stepX, coord.y+ stepY)).x;
-    float c8 = texture2D(sobelMap, vec2(coord.x, coord.y + stepY)).x;
-    float c9 = texture2D(sobelMap, vec2(coord.x + stepX, coord.y + stepY)).x;
+//    float stepX = 1.0 / lengthStep;
+//    float stepY = 1.0 / lengthStep;
+      float stepX = (a.x - viewportSize.x)/viewportSize.x;
+      float stepY = (a.y - viewportSize.y)/viewportSize.y;
 
-    float f1 = 1.0;
-    float f2 = 2.0;
+//    vec4 c1 = texture2D(map, vec2(coord.x -stepX, coord.y-stepY));
+//    vec4 c2 = texture2D(map, vec2(coord.x, coord.y -stepY));
+//    vec4 c3 = texture2D(map, vec2(coord.x +stepX, coord.y -stepY));
+//    vec4 c4 = texture2D(map, vec2(coord.x -stepX, coord.y));
+//    vec4 c5 = texture2D(map, vec2(coord.x, coord.y));
+//    vec4 c6 = texture2D(map, vec2(coord.x + stepX, coord.y));
+//    vec4 c7 = texture2D(map, vec2(coord.x - stepX, coord.y+ stepY));
+//    vec4 c8 = texture2D(map, vec2(coord.x, coord.y + stepY));
+//    vec4 c9 = texture2D(map, vec2(coord.x + stepX, coord.y + stepY));
+    float size = 9;
+    vec4 l[9];
+    l[0] = texture2D(map, vec2(coord.x -stepX, coord.y-stepY));
+    l[1] = texture2D(map, vec2(coord.x, coord.y -stepY));
+    l[2] = texture2D(map, vec2(coord.x +stepX, coord.y -stepY));
+    l[3] = texture2D(map, vec2(coord.x -stepX, coord.y));
+    l[4] = texture2D(map, vec2(coord.x, coord.y));
+    l[5] = texture2D(map, vec2(coord.x + stepX, coord.y));
+    l[6] = texture2D(map, vec2(coord.x - stepX, coord.y+ stepY));
+    l[7] = texture2D(map, vec2(coord.x, coord.y + stepY));
+    l[8] = texture2D(map, vec2(coord.x + stepX, coord.y + stepY));
 
-//    float sX = (c1 * -f1) + (c4 * -f2) + (c7 * -f1) + (c3 * f1) + (c6 * f2) + (c9 * f1);
-//    float sY = (c1 * +f1) + (c2 * +f2) + (c3 * +f1) + (c7 * -f1) + (c8 * -f2) + (c9 *-f1);
-//    float sXY = sqrt(pow(sX,2) + pow(sY,2));
-
-//    float border = 0;
-//    if(sXY > threshold) border = 1;
-
-    vec4 c = vec4(0);
-    if(c5!= 1) {
-        if(c3 == 1) c = vec4(1.0, 0.0 , 0.0, 1.0);
+    vec4 finalColor = vec4(0.0, 0.0, sqrt(pow(viewportSize.x,2)+ pow(viewportSize.y,2)), 1.0);
+    if(firstPass){
+        if(l[4].x == 1.0){
+            finalColor = vec4(coord.x, coord.y, 0.0, 1.0);
+        }
     }else{
-        c = vec4(1);
+        vec4 bestVec = l[4];
+        if(l[4].z != 0 && l[4].x == 0.0 && l[4].y==0.0){
+            bestVec = vec4(0.0, 0.0, sqrt(pow(viewportSize.x,2)+ pow(viewportSize.y,2)), 1.0);
+            for(int i = 0; i < size; i++)
+            {
+                if(l[i].z < bestVec.z) bestVec = l[i];
+            }
+            float distance = sqrt(pow((coord.x - bestVec.x),2) + pow((coord.y - bestVec.y),2));
+            bestVec.z = distance;
+        }
+        finalColor = bestVec;
     }
-    out_Border = texture2D(sobelMap, vec2(coord.x, coord.y));
+    if(lastPass)
+    {
+        finalColor = vec4(vec3(finalColor.z), 1.0);
+    }
+
+    out_Border = finalColor;
 }
