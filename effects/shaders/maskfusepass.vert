@@ -1,27 +1,27 @@
 #version 400
 
 in vec4 in_Position;
-in vec3 in_Normal;
+//in vec3 in_Normal;
 
-out float depth;
-out vec3 normal;
-out vec4 vert;
+//out float depth;
+//out vec3 normal;
+//out vec4 vert;
 
-uniform mat4 modelMatrix;
-uniform mat4 viewMatrix;
-uniform mat4 projectionMatrix;
+//uniform mat4 modelMatrix;
+//uniform mat4 viewMatrix;
+//uniform mat4 projectionMatrix;
 
 void main(void)
 {
-    mat4 modelViewMatrix = viewMatrix * modelMatrix;
+//    mat4 modelViewMatrix = viewMatrix * modelMatrix;
 
-    mat4 normalMatrix = transpose(inverse(modelViewMatrix));
-    normal = normalize(vec3(normalMatrix * vec4(in_Normal,0.0)).xyz);
-    vert = modelViewMatrix * in_Position;
+//    mat4 normalMatrix = transpose(inverse(modelViewMatrix));
+//    normal = normalize(vec3(normalMatrix * vec4(in_Normal,0.0)).xyz);
+//    vert = modelViewMatrix * in_Position;
 
-    vec4 proj = viewMatrix * modelMatrix * in_Position;
+//    vec4 proj = viewMatrix * modelMatrix * in_Position;
 
 
 
-    gl_Position = projectionMatrix * proj;
+    gl_Position = in_Position;
 }

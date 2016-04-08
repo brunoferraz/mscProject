@@ -8,7 +8,7 @@ in vec4 vert;
 uniform vec2 viewportSize;
 uniform sampler2D depthMap;
 
-float threshold = 0.0020;
+float threshold = 0.002;
 
 void main(void)
 {
@@ -17,15 +17,15 @@ void main(void)
     float stepX = (1 * 1)/viewportSize.x;
     float stepY = (1 * 1)/viewportSize.y;
 
-    float c1 = texture2D(depthMap, vec2(coord.x-stepX, coord.y-stepY)).x;
-    float c2 = texture2D(depthMap, vec2(coord.x, coord.y -stepY)).x;
-    float c3 = texture2D(depthMap, vec2(coord.x+stepX, coord.y -stepY)).x;
-    float c4 = texture2D(depthMap, vec2(coord.x-stepX, coord.y)).x;
-    float c5 = texture2D(depthMap, vec2(coord.x, coord.y)).x;
-    float c6 = texture2D(depthMap, vec2(coord.x + stepX, coord.y)).x;
-    float c7 = texture2D(depthMap, vec2(coord.x - stepX, coord.y+ stepY)).x;
-    float c8 = texture2D(depthMap, vec2(coord.x, coord.y + stepY)).x;
-    float c9 = texture2D(depthMap, vec2(coord.x + stepX, coord.y + stepY)).x;
+    float c1 = texture2D(depthMap, vec2(coord.x-stepX,  coord.y-stepY)).x;
+    float c2 = texture2D(depthMap, vec2(coord.x,        coord.y -stepY)).x;
+    float c3 = texture2D(depthMap, vec2(coord.x+stepX,  coord.y -stepY)).x;
+    float c4 = texture2D(depthMap, vec2(coord.x-stepX,  coord.y)).x;
+    float c5 = texture2D(depthMap, vec2(coord.x,        coord.y)).x;
+    float c6 = texture2D(depthMap, vec2(coord.x +stepX, coord.y)).x;
+    float c7 = texture2D(depthMap, vec2(coord.x -stepX, coord.y+ stepY)).x;
+    float c8 = texture2D(depthMap, vec2(coord.x,        coord.y + stepY)).x;
+    float c9 = texture2D(depthMap, vec2(coord.x +stepX, coord.y + stepY)).x;
 
     float f1 = 1.0;
     float f2 = 2.0;

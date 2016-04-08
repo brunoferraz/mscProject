@@ -8,12 +8,14 @@ uniform vec2 viewportSize;
 
 uniform sampler2D angleMask;
 uniform sampler2D depthMask;
+uniform sampler2D borderMask;
 
 void main(void)
 {
     vec2 coord = vec2(gl_FragCoord.x/viewportSize.x, gl_FragCoord.y/viewportSize.y);
     vec4 a = texture2D(angleMask, coord);
     vec4 d = texture2D(depthMask, coord);
+    vec4 bd = texture2D(borderMask, coord);
 
     float r = 1.0;
     float g = 1.0;
@@ -26,6 +28,10 @@ void main(void)
     r*= d.x;
     g*= d.y;
     b*= d.z;
+
+    r*= bd.x;
+    g*= bd.y;
+    b*= bd.z;
 
     out_Color = vec4(r, g, b, 1.0);
 }

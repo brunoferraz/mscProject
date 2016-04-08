@@ -87,6 +87,7 @@ private:
     int ID_MaskDepth;
     int ID_MaskBorder;
 
+    int loopID;
 
 
 public:
@@ -113,6 +114,8 @@ public:
         readBuffer = 1;
 
         useWeights = true;
+
+        loopID = 0;
     }
 
     /**
@@ -361,7 +364,8 @@ public:
         fboMaskBorder->unbind();
         fboMaskBorder->clearDepth();
 
-
+        fboMaskBorder->saveAsPPM("image" + std::to_string(loopID) + ".ppm");
+//        renderFbo(*fboMaskBorder, quad, ID_DepthTextureNorm);
         ////////////////////////////////////////////////
         //JUMP FLOOD
         Framebuffer *fboJumpFlood = new Framebuffer();
@@ -370,25 +374,30 @@ public:
             fboJumpFlood->create(viewport_size[0], viewport_size[1], 2);
         }
 
-        GLuint readJump = 0;
-        GLuint writeJump = 1;
+        bool readJump = 0;
+        bool writeJump = 1;
         bool firstPass = true;
         bool lastPass = false;
         int counter = 0;
-        float lengthStep = 1;
-        int totalLoops = 3;
 
-        while(counter <totalLoops)
+
+        int max_dim = fboJumpFlood->getDimensions()[0];
+        int totalLoops = ceil(log(max_dim))+1;
+        float lengthStep = pow(2,totalLoops);
+
+        while(counter < totalLoops)
         {
+            counter++;
+            if(counter == totalLoops)
+                lastPass = true;
+
+
             fboJumpFlood->clearAttachment(writeJump);
             fboJumpFlood->bindRenderBuffer(writeJump);
 
                 jumpFlood.bind();
-                jumpFlood.setUniform("projectionMatrix", camera.getProjectionMatrix());
-                jumpFlood.setUniform("modelMatrix", mesh.getModelMatrix());
-                jumpFlood.setUniform("viewMatrix", camera.getViewMatrix());
-                jumpFlood.setUniform("viewportSize",  Eigen::Vector2f(774.0, 518.0));
-                jumpFlood.setUniform("lengthStep",  lengthStep);
+                jumpFlood.setUniform("viewportSize",  fboJumpFlood->getDimensions());
+                jumpFlood.setUniform("step",  lengthStep);
                 jumpFlood.setUniform("firstPass", firstPass);
                 jumpFlood.setUniform("lastPass", lastPass);
 
@@ -397,26 +406,24 @@ public:
                 }else{
                     jumpFlood.setUniform("map", fboJumpFlood->bindAttachment(readJump));
                 }
-                mesh.setAttributeLocation(jumpFlood);
+                quad.setAttributeLocation(jumpFlood);
 
                 glEnable(GL_DEPTH_TEST);
-                mesh.render();
+                quad.render();
                 jumpFlood.unbind();
 
             fboJumpFlood->unbind();
             fboJumpFlood->clearDepth();
 
-            GLuint temp = readJump;
-            readJump = writeJump;
-            writeJump = temp;
+            readJump = !readJump;
+            writeJump = !writeJump;
 
-            lengthStep *= 2;
-            counter++;
+            lengthStep /= 2;
+            cout << lengthStep << endl;
             firstPass  = false;
-            if(counter == (totalLoops -2))
-                lastPass = true;
         }
-        renderFbo(*fboJumpFlood, quad, readJump);
+        fboMaskBorder = fboJumpFlood;
+//        renderFbo(*fboJumpFlood, quad, readJump);
     }
     void fuseMasks(Tucano::Mesh& mesh, const Tucano::Camera& camera, const Tucano::Camera& lightTrackball)
     {
@@ -435,23 +442,24 @@ public:
         fboMasksFused->clearAttachments();
         fboMasksFused->bindRenderBuffer(0);
             maskFusePass.bind();
-            maskFusePass.setUniform("projectionMatrix", camera.getProjectionMatrix());
-            maskFusePass.setUniform("modelMatrix", mesh.getModelMatrix());
-            maskFusePass.setUniform("viewMatrix", camera.getViewMatrix());
+//            maskFusePass.setUniform("projectionMatrix", camera.getProjectionMatrix());
+//            maskFusePass.setUniform("modelMatrix", mesh.getModelMatrix());
+//            maskFusePass.setUniform("viewMatrix", camera.getViewMatrix());
             maskFusePass.setUniform("viewportSize",    Eigen::Vector2f(viewport_size[0], viewport_size[1]));
             maskFusePass.setUniform("angleMask",    fboMaskAngle->bindAttachment(ID_MaskAngle));
             maskFusePass.setUniform("depthMask",    fboMaskDepth->bindAttachment(0));
+            maskFusePass.setUniform("borderMask",   fboMaskBorder->bindAttachment(0));
 
-            mesh.setAttributeLocation(maskFusePass);
+            quad.setAttributeLocation(maskFusePass);
 
             glEnable(GL_DEPTH_TEST);
-            mesh.render();
+            quad.render();
             maskFusePass.unbind();
 
         fboMasksFused->unbind();
         fboMasksFused->clearDepth();
 
-//        renderFbo(*fboMasksFused, quad);
+        renderFbo(*fboMasksFused, quad);
     }
 
     void updateTF (MultiTextureManagerObj& multiTexObj, const Tucano::Camera& camera, const Tucano::Camera& lightTrackball)
@@ -533,9 +541,8 @@ public:
 
     void render(MultiTextureManagerObj &multiTextObj, const Camera &camera, const Camera &lightTrackball)
     {
-        renderMasks(multiTextObj, camera, lightTrackball);
-//        renderDistance(multiTextObj, camera, lightTrackball);
-
+//      renderMasks(multiTextObj, camera, lightTrackball);
+        renderDistance(multiTextObj, camera, lightTrackball);
     }
     void renderDistance(MultiTextureManagerObj &multiTextObj, const Camera &camera, const Camera &lightTrackball)
     {
@@ -546,12 +553,13 @@ public:
             cam.setViewport(camera.getViewport());
             int total = multiTextObj.getNumPhotos();
             for(int i = 0; i < total ; i++){
+                loopID = i;
                 multiTextObj.calibrateCamera(cam);
                 depthMapRender(*multiTextObj.getMesh(), cam, lightTrackball);
 
                 prepareMaskAnglePass(*multiTextObj.getMesh(), cam, lightTrackball);
                 prepareMaskDepthPass(*multiTextObj.getMesh(), cam, lightTrackball);
-//                prepareMaskBorderPass(*multiTextObj.getMesh(), cam, lightTrackball);
+                prepareMaskBorderPass(*multiTextObj.getMesh(), cam, lightTrackball);
 
                 fuseMasks(*multiTextObj.getMesh(), cam, lightTrackball);
 
