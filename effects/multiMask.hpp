@@ -364,8 +364,8 @@ public:
         fboMaskBorder->unbind();
         fboMaskBorder->clearDepth();
 
-        fboMaskBorder->saveAsPPM("image" + std::to_string(loopID) + ".ppm");
-//        renderFbo(*fboMaskBorder, quad, ID_DepthTextureNorm);
+//        fboMaskBorder->saveAsPPM("image" + std::to_string(loopID) + ".ppm");
+        renderFbo(*fboMaskBorder, quad, ID_MaskBorder);
         ////////////////////////////////////////////////
         //JUMP FLOOD
         Framebuffer *fboJumpFlood = new Framebuffer();
@@ -459,7 +459,7 @@ public:
         fboMasksFused->unbind();
         fboMasksFused->clearDepth();
 
-        renderFbo(*fboMasksFused, quad);
+//        renderFbo(*fboMasksFused, quad);
     }
 
     void updateTF (MultiTextureManagerObj& multiTexObj, const Tucano::Camera& camera, const Tucano::Camera& lightTrackball)
@@ -541,8 +541,8 @@ public:
 
     void render(MultiTextureManagerObj &multiTextObj, const Camera &camera, const Camera &lightTrackball)
     {
-//      renderMasks(multiTextObj, camera, lightTrackball);
-        renderDistance(multiTextObj, camera, lightTrackball);
+      renderMasks(multiTextObj, camera, lightTrackball);
+//        renderDistance(multiTextObj, camera, lightTrackball);
     }
     void renderDistance(MultiTextureManagerObj &multiTextObj, const Camera &camera, const Camera &lightTrackball)
     {
