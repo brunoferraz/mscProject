@@ -23,5 +23,5 @@ void main(void)
 //  depth = -(proj.z - near) / (far - near);
 
 
-    gl_Position = projectionMatrix * proj;
+    gl_Position = in_Position;
 }

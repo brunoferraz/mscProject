@@ -355,10 +355,10 @@ public:
             maskBorderPass.setUniform("depthMap", fboDepthMap->bindAttachment(ID_DepthTextureNorm));
             maskBorderPass.setUniform("viewportSize",  Eigen::Vector2f(774.0, 518.0));
 
-            mesh.setAttributeLocation(maskBorderPass);
+            quad.setAttributeLocation(maskBorderPass);
 
             glEnable(GL_DEPTH_TEST);
-            mesh.render();
+            quad.render();
             maskBorderPass.unbind();
 
         fboMaskBorder->unbind();
