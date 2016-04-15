@@ -94,7 +94,7 @@ void main(void)
     {
             finalColor.z /= sqrt(pow(viewportSize.x,2)+ pow(viewportSize.y,2));
             finalColor.z = clamp(finalColor.z,0, 1);
-            finalColor = vec4(vec3(finalColor.z), 1.0);
+            finalColor = vec4(vec3(finalColor.z+0.01), 1.0);
 
     }
 
