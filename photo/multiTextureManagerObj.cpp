@@ -1,6 +1,6 @@
 #include "multiTextureManagerObj.h"
 #include <sstream>
-
+#include <util/util.h>
 
 MultiTextureManagerObj::MultiTextureManagerObj()
 {
@@ -12,6 +12,8 @@ bool MultiTextureManagerObj::initializeFromMeshLab(QString path, QString photoPa
     QDomDocument doc;
     QFile file(path);
     qDebug() << file.exists();
+
+    cout << "mlp : " << path.toStdString().c_str() << endl;
     if(!file.open(QIODevice::ReadOnly | QIODevice::Text))
     {
         qDebug() << "failed to open";
@@ -31,7 +33,10 @@ bool MultiTextureManagerObj::initializeFromMeshLab(QString path, QString photoPa
     filename = root.firstChildElement().firstChildElement().attribute("filename").toStdString();
     label    = root.firstChildElement().firstChildElement().attribute("label").toStdString();
 
-    openMesh("./urna/"+filename);
+    cout << filename.c_str() << endl;
+
+    openMesh(Util::debugOpenPath+filename);
+    //mesh.resetModelMatrix();
 
     std::stringstream m(root.firstChildElement().firstChildElement().firstChildElement().text().toStdString());
     int i = 0;
@@ -45,6 +50,7 @@ bool MultiTextureManagerObj::initializeFromMeshLab(QString path, QString photoPa
     //get raster info
     int total = rasterTree.count();
     for(int i =0; i < total; i++){
+        cout << "raster " << i << " / " << total << endl;
         RasterInfo *info = new RasterInfo();
         info->label = rasterTree.at(i).toElement().attribute("label").toStdString();
         if(photoPath==""){
@@ -52,8 +58,9 @@ bool MultiTextureManagerObj::initializeFromMeshLab(QString path, QString photoPa
             info->filename = rasterTree.at(i).firstChild().nextSibling().toElement().attribute("fileName").toStdString();
         }else{
             //set your own path
-            info->filename = photoPath.toStdString() + info->label;
+            info->filename = photoPath.toStdString() + rasterTree.at(i).firstChild().nextSibling().toElement().attribute("fileName").toStdString();
         }
+        cout << "loading " << info->filename.c_str() << endl;
         QImage img(QString::fromStdString(info->filename));
         QImage glImage = QGLWidget::convertToGLFormat(img);
         info->baseTexture.create(glImage.width(), glImage.height(), glImage.bits());

@@ -239,7 +239,7 @@ public:
             maskPass.setUniform("modelMatrix", mesh.getModelMatrix());
             maskPass.setUniform("viewMatrix", camera.getViewMatrix());
             maskPass.setUniform("near", 0.1);
-            maskPass.setUniform("far", 10000.0);
+            maskPass.setUniform("far", 100000.0);
             maskPass.setUniform("in_depthmap", fboDepthMap->bindAttachment(0));
             maskPass.setUniform("viewportSize",    Eigen::Vector2f(774.0, 518.0));
             mesh.setAttributeLocation(maskPass);
@@ -250,6 +250,7 @@ public:
 
         fboMask->unbind();
         fboMask->clearDepth();
+        fboDepthMap->unbindAttachments();
         renderFbo(*fboMask, quad, ID_MaskDepth);
     }
 
@@ -363,8 +364,9 @@ public:
 
         fboMaskBorder->unbind();
         fboMaskBorder->clearDepth();
+        fboDepthMap->unbindAttachments();
 
-        fboMaskBorder->saveAsPPM("image" + std::to_string(loopID) + ".ppm");
+//        fboMaskBorder->saveAsPPM("image" + std::to_string(loopID) + ".ppm");
 
         ////////////////////////////////////////////////
         //JUMP FLOOD
@@ -411,6 +413,7 @@ public:
                 glEnable(GL_DEPTH_TEST);
                 quad.render();
                 jumpFlood.unbind();
+                fboMaskBorder->unbindAttachments();
 
             fboJumpFlood->unbind();
             fboJumpFlood->clearDepth();
@@ -419,7 +422,7 @@ public:
             writeJump = !writeJump;
 
             lengthStep /= 2;
-            cout << lengthStep << endl;
+//            cout << lengthStep << endl;
             firstPass  = false;
         }
         fboMaskBorder = fboJumpFlood;
@@ -458,7 +461,9 @@ public:
 
         fboMasksFused->unbind();
         fboMasksFused->clearDepth();
-
+        fboMaskAngle->unbindAttachments();
+        fboMaskDepth->unbindAttachments();
+        fboMaskBorder->unbindAttachments();
 //        renderFbo(*fboMasksFused, quad);
     }
 
@@ -553,15 +558,21 @@ public:
             cam.setViewport(camera.getViewport());
             int total = multiTextObj.getNumPhotos();
             for(int i = 0; i < total ; i++){
+                cout << "mask " << i << endl;
                 loopID = i;
                 multiTextObj.calibrateCamera(cam);
                 depthMapRender(*multiTextObj.getMesh(), cam, lightTrackball);
+                cout << "depthmap " << i << endl;
 
                 prepareMaskAnglePass(*multiTextObj.getMesh(), cam, lightTrackball);
+                cout << "angle " << i << endl;
                 prepareMaskDepthPass(*multiTextObj.getMesh(), cam, lightTrackball);
+                cout << "depth " << i << endl;
                 prepareMaskBorderPass(*multiTextObj.getMesh(), cam, lightTrackball);
+                cout << "border " << i << endl;
 
                 fuseMasks(*multiTextObj.getMesh(), cam, lightTrackball);
+                cout << "fuse " << i << endl;
 
                 maskList.push_back(fboMasksFused);
 
@@ -583,7 +594,7 @@ public:
 
     void renderMasks(MultiTextureManagerObj &multiTextObj, const Camera &camera, const Camera &lightTrackball)
     {
-        //THIS FUNCTION IS USED TO PREPARE AND SEE MASKS WHILE THE PRODUCTION
+        //THIS FUNCTION IS USED TO PREPARE AND SEE MASKS WHILE ON PRODUCTION
         Mesh &mesh = *multiTextObj.getMesh();
 //      if(firstRenderFlag)
         {
@@ -592,6 +603,7 @@ public:
             int total = multiTextObj.getNumPhotos();
             total = 1;
             for(int i = 0; i < total ; i++){
+                cout << "mask " << i << endl;
                 multiTextObj.calibrateCamera(cam);
                 depthMapRender(*multiTextObj.getMesh(), cam, lightTrackball);
 
@@ -642,7 +654,7 @@ public:
 
             Eigen::Vector3f a = camera.getViewMatrix().linear() * v;
             Eigen::Vector3f b = multiTexObj.getViewMatrix()->linear() * v;
-            float angle     = a.dot(b);
+            float angle     = pow(a.dot(b)+1, 5);
             float distance  = distanceVector.norm();
             maxAngle = std::max(maxAngle, angle);
             minAngle = std::min(minAngle, angle);
@@ -684,7 +696,7 @@ public:
             float x = (normDistanceList.at(i)-minDist)/(maxDist-minDist);
             normDistanceList.at(i) = x +1;
             float y = (normAngleList.at(i)-minAngle)/(maxAngle-minAngle);
-            normAngleList.at(i) = y;
+            normAngleList.at(i) = y + 1;
         }
 
 //        cout << "NORMALIZED DISTANCE >> ";
@@ -738,7 +750,7 @@ public:
                 lastpass = true;
             }
             int texturesPerPass = limitPerPass;
-            if(lastpass && resto !=0) texturesPerPass = resto;
+            if(lastpass && resto !=0) texturesPerPass = resto;            
 
             fboMPass->clearAttachment(writeBuffer);
             if (!lastpass)

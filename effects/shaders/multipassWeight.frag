@@ -125,7 +125,7 @@ void main(void)
         float shininess = 100.0;
 
         vec4 ambientLight = nColor * 0.5;
-        vec4 diffuseLight = nColor * 0.4 * max(dot(lightDirection, normal),0.0);
+        vec4 diffuseLight = nColor * 0.7 * max(dot(lightDirection, normal),0.0);
         vec4 specularLight = vec4(1.0) *  max(pow(dot(lightReflection, eyeDirection), shininess),0.0);
 
         nColor = vec4(ambientLight.xyz + diffuseLight.xyz + specularLight.xyz, 1.0);

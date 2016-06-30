@@ -26,6 +26,10 @@ public:
     static void addToLog(const char* text);
     static void saveLogToFile();
     static std::string log;
+
+    static  char* debugOpenFile;
+    static  char* debugOpenPath;
+
 };
 
 #endif // UTIL_H

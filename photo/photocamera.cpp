@@ -98,7 +98,7 @@ void PhotoCamera::buildProjection()
       float ratio   = getWidth()/(getHeight() * pixelSize(0)/pixelSize(1));
       float f       =  1/ tan(fov/2);
       float near    = 0.1;
-      float far     = 10000;
+      float far     = 100000;
 //      cout << "fov: " << fov << endl;
 //      cout << "ratio: " << ratio << endl;
 

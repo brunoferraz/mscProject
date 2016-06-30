@@ -11,7 +11,7 @@ uniform mat4 projectionMatrix;
 uniform sampler2D depthMapTexture;
 uniform sampler2D imageTexture;
 float near = 0.1;
-float far = 10000.0;
+float far = 100000.0;
 
 void main(void)
 {

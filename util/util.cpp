@@ -59,3 +59,7 @@ void Util::addToLog(const char *text)
 
 
 std::string Util::log = "";
+//char* Util::debugOpenFile = "../../assets/Biancone_ricardo/Biancone_DH_11.mlp";
+//char* Util::debugOpenPath = "./Biancone_ricardo/";
+char* Util::debugOpenFile = "../../assets/duomo_Ricardo/abside_fine.mlp";
+char* Util::debugOpenPath = "./duomo_Ricardo/";

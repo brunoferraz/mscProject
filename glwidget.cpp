@@ -1,4 +1,5 @@
 #include "glwidget.h"
+#include <util/util.h>
 
 GLWidget::GLWidget(QWidget *parent) : Tucano::QtTrackballWidget(parent)
 {
@@ -10,7 +11,9 @@ void GLWidget::initialize()
     glEnable (GL_BLEND);
     glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    mTextManagerObj.initializeFromMeshLab(QString("urna/urna.mlp"), QString("./urna/fotos/"));
+//    mTextManagerObj.initializeFromMeshLab(QString("urna/urna.mlp"), QString("./urna/fotos/"));
+    mTextManagerObj.initializeFromMeshLab(Util::debugOpenFile, Util::debugOpenPath);
+//     mTextManagerObj.initializeFromMeshLab(QString("Biancone_ricardo/Biancone_DH.mlp"));
 
     Tucano::QtTrackballWidget::initialize();
 //    Tucano::QtTrackballWidget::openMesh("./models/toy.obj");
@@ -45,7 +48,7 @@ void GLWidget::paintGL()
 {
     makeCurrent();
 
-    glClearColor(0.3, 0.3, 0.3, 1.0);
+    glClearColor(0.7, 0.7, 0.7, 1.0);
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
     glEnable(GL_DEPTH_TEST);
@@ -76,7 +79,7 @@ void GLWidget::paintGL()
                 Eigen::Affine3f m = (*(mTextManagerObj.getViewMatrix())).inverse();
                 m.translation() -= mTextManagerObj.getMesh()->getCentroid();
                 m.translation() *= mTextManagerObj.getMesh()->getScale();
-                m.scale (0.6);
+                m.scale (0.08);
                 camRep.setModelMatrix(m);
                 camRep.render(*currentCamera, light_trackball);
             }

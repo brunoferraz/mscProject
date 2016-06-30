@@ -21,7 +21,7 @@ BUILDDIR = ./build/
 
 LIBS += -lGLEW -lGLU
 
-INCLUDEPATH +=  $$TUCANO_PATH/src $$EIGEN_PATH $$BUILDDIR/bin/effects $$TUCANO_PATH
+INCLUDEPATH +=  $$TUCANO_PATH/tucano $$EIGEN_PATH $$BUILDDIR/bin/effects $$TUCANO_PATH
 
 OBJECTS_DIR =   $$BUILDDIR/obj
 MOC_DIR =       $$BUILDDIR/moc
@@ -46,7 +46,7 @@ HEADERS  += mainwindow.h \
     util/util.h \
     photo/multiTextureManagerObj.h \
     photo/photocamera.h \
-    $$TUCANO_PATH/src/utils/qttrackballwidget.hpp \
+    $$TUCANO_PATH/tucano/utils/qttrackballwidget.hpp \
     ./effects/phongshader.hpp \
     ./effects/rendertexture.hpp \
     ./effects/multi.hpp \
